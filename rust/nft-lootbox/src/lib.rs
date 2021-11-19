@@ -19,7 +19,8 @@ use {
 
 anchor_lang::declare_id!("cndyAnrLdpjq1Ssp1z8xxDsB8dxe7u4HL5Nxi2K5WXZ");
 
-const PREFIX: &str = "candy_machine";
+const PREFIX: &str = "nft_lootbox";
+
 #[program]
 pub mod nft_candy_machine {
     use anchor_lang::solana_program::{
