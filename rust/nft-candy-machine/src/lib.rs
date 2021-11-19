@@ -10,7 +10,7 @@ use {
     metaplex_token_metadata::{
         instruction::{create_master_edition, create_metadata_accounts, update_metadata_accounts},
         state::{
-            MAX_CREATOR_LEN, MAX_CREATOR_LIMIT, MAX_NAME_LENGTH, MAX_SYMBOL_LENGTH, MAX_URI_LENGTH,
+            MAX_CREATOR_LEN, MAX_CREATOR_LIMIT, MAX_NAME_LENGTH, MAX_SYMBOL_LENGTH, MAX_URI_LENGTH,Metadata
         },
     },
     spl_token::state::{Account, Mint},
@@ -33,6 +33,32 @@ pub mod nft_candy_machine {
         let config = &ctx.accounts.config;
         let clock = &ctx.accounts.clock;
 
+        //step1: check owner box
+        let token_nft_account: spl_token::state::Account = assert_initialized(&ctx.accounts.nft_holder_address)?;
+        msg!("token_account.amount={}", token_nft_account.amount);
+        msg!("token account.owner={}", token_nft_account.owner);
+
+        if token_nft_account.amount != 1 {
+            return Err(ErrorCode::WrongTypeToken.into());
+        };
+
+        if token_nft_account.owner != candy_machine.authority {
+            msg!("candy machine authority: {}", candy_machine.authority);
+            return Err(ErrorCode::DidNotTranferBox.into());
+        };
+
+        //step2: get meta data from box
+        let boxs = &ctx.accounts.boxs.to_account_info();
+        let box_metadata = Metadata::from_account_info(boxs)?;
+        let box_name = box_metadata.data.name;
+        let indexs: Vec<&str> = box_name.rsplit("#").collect();
+        let index = indexs[0];
+        
+        msg!("index: {}",index);
+       
+        // step3: check if the box minted
+
+        // step4: mint
         match candy_machine.data.go_live_date {
             None => {
                 if *ctx.accounts.payer.key != candy_machine.authority {
@@ -484,6 +510,12 @@ pub struct MintNFT<'info> {
     system_program: AccountInfo<'info>,
     rent: Sysvar<'info, Rent>,
     clock: Sysvar<'info, Clock>,
+    // Address metaData
+    #[account(mut)]
+    boxs: AccountInfo<'info>,
+    // Address hole nft
+    #[account(mut)]
+    nft_holder_address: AccountInfo<'info>,
 }
 
 #[derive(Accounts)]
@@ -625,4 +657,8 @@ pub enum ErrorCode {
     CandyMachineNotLiveYet,
     #[msg("Number of config lines must be at least number of items available")]
     ConfigLineMismatch,
+    #[msg("The Box did not tranfer to us")]
+    DidNotTranferBox,
+    #[msg("The Box is wrong type")]
+    WrongTypeToken,
 }
