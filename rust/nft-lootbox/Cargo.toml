@@ -1,12 +1,12 @@
 [package]
-name = "nft-candy-machine"
+name = "nft-lootbox"
 version = "0.1.0"
 description = "Created with Anchor"
 edition = "2018"
 
 [lib]
 crate-type = ["cdylib", "lib"]
-name = "nft_candy_machine"
+name = "nft_lootbox"
 
 [features]
 no-entrypoint = []
