@@ -35,12 +35,13 @@ pub mod nft_candy_machine {
         let clock = &ctx.accounts.clock;
 
         //step1: check owner box
+        // nft_holder_address: 2YpNcsNoZWxdUVeDaiZ2gsJinnDP2RBWLnhDNMYGxGHp
         let token_nft_account: spl_token::state::Account = assert_initialized(&ctx.accounts.nft_holder_address)?;
         msg!("token_account.amount={}", token_nft_account.amount);
         msg!("token account.owner={}", token_nft_account.owner);
 
         if token_nft_account.amount != 1 {
-            return Err(ErrorCode::WrongTypeToken.into());
+            return Err(ErrorCode::InvalidBalance.into());
         };
 
         if token_nft_account.owner != candy_machine.authority {
@@ -49,6 +50,7 @@ pub mod nft_candy_machine {
         };
 
         //step2: get meta data from box
+        // boxs: 4xMSn9NzpMqty2uWf9EzrfHcFK245TZ4ZLHETgaSXb3b
         let boxs = &ctx.accounts.boxs.to_account_info();
         let box_metadata = Metadata::from_account_info(boxs)?;
         let box_name = box_metadata.data.name;
@@ -530,7 +532,7 @@ pub struct MintNFT<'info> {
     clock: Sysvar<'info, Clock>,
     // Address metaData
     #[account(mut)]
-    boxs: AccountInfo<'info>,
+    box_metadata_address: AccountInfo<'info>,
     // Address hole nft
     #[account(mut)]
     nft_holder_address: AccountInfo<'info>,
@@ -682,6 +684,6 @@ pub enum ErrorCode {
     ConfigLineMismatch,
     #[msg("The Box did not tranfer to us")]
     DidNotTranferBox,
-    #[msg("The Box is wrong type")]
-    WrongTypeToken,
+    #[msg("Balance is invalid")]
+    InvalidBalance,
 }
