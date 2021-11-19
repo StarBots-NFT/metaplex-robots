@@ -43,8 +43,8 @@ if (!fs.existsSync(CACHE_PATH)) {
   fs.mkdirSync(CACHE_PATH);
 }
 
-// log.setLevel(log.levels.DEBUG);
-log.setLevel(log.levels.INFO);
+log.setLevel(log.levels.DEBUG);
+// log.setLevel(log.levels.INFO);
 
 programCommand('upload')
   .argument(
@@ -220,6 +220,9 @@ programCommand('verify')
     await Promise.all(
       chunks(Array.from(Array(keys.length).keys()), 500).map(
         async allIndexesInSlice => {
+          try {
+
+          
           for (let i = 0; i < allIndexesInSlice.length; i++) {
             const key = keys[allIndexesInSlice[i]];
             log.debug('Looking at key ', allIndexesInSlice[i]);
@@ -325,6 +328,13 @@ programCommand('verify')
               }
             }
           }
+
+
+
+          } catch(err) {
+            console.log(err, '123');
+          }
+
         },
       ),
     );
