@@ -28,7 +28,8 @@ pub mod nft_candy_machine {
 
     use super::*;
 
-    pub fn mint_nft<'info>(ctx: Context<'_, '_, '_, 'info, MintNFT<'info>>) -> ProgramResult {
+    pub fn mint_nft<'info>(ctx: Context<'_, '_, '_, 'info, MintNFT<'info>>, data: u64) -> ProgramResult {
+
         let candy_machine = &mut ctx.accounts.candy_machine;
         let config = &ctx.accounts.config;
         let clock = &ctx.accounts.clock;
@@ -74,8 +75,22 @@ pub mod nft_candy_machine {
             }
         }
 
-        if candy_machine.items_redeemed >= candy_machine.data.items_available {
+        // if candy_machine.items_redeemed >= candy_machine.data.items_available {
+        //     return Err(ErrorCode::CandyMachineEmpty.into());
+        // }
+
+        if data >= candy_machine.data.items_available {
             return Err(ErrorCode::CandyMachineEmpty.into());
+        }
+
+        msg!("mint_nft {}", data);
+
+        if candy_machine.starbots.contains(&data) { 
+            msg!("yes");
+            return Err(ErrorCode::MintLootBoxUsed.into());
+        } else {
+            msg!("no");
+            candy_machine.starbots.push(data);
         }
 
         if let Some(mint) = candy_machine.token_mint {
@@ -122,7 +137,8 @@ pub mod nft_candy_machine {
 
         let config_line = get_config_line(
             &config.to_account_info(),
-            candy_machine.items_redeemed as usize,
+            // candy_machine.items_redeemed as usize,
+            data as usize,
         )?;
 
         candy_machine.items_redeemed = candy_machine
@@ -407,6 +423,7 @@ pub mod nft_candy_machine {
         candy_machine.authority = *ctx.accounts.authority.key;
         candy_machine.config = ctx.accounts.config.key();
         candy_machine.bump = bump;
+
         if ctx.remaining_accounts.len() > 0 {
             let token_mint_info = &ctx.remaining_accounts[0];
             let _token_mint: Mint = assert_initialized(&token_mint_info)?;
@@ -440,7 +457,7 @@ pub mod nft_candy_machine {
 #[derive(Accounts)]
 #[instruction(bump: u8, data: CandyMachineData)]
 pub struct InitializeCandyMachine<'info> {
-    #[account(init, seeds=[PREFIX.as_bytes(), config.key().as_ref(), data.uuid.as_bytes()], payer=payer, bump=bump, space=8+32+32+33+32+64+64+64+200)]
+    #[account(init, seeds=[PREFIX.as_bytes(), config.key().as_ref(), data.uuid.as_bytes()], payer=payer, bump=bump, space=8+32+32+33+32+64+64+64+200+1200*8+8)]
     candy_machine: ProgramAccount<'info, CandyMachine>,
     #[account(constraint= wallet.owner == &spl_token::id() || (wallet.data_is_empty() && wallet.lamports() > 0) )]
     wallet: AccountInfo<'info>,
@@ -476,6 +493,7 @@ pub struct AddConfigLines<'info> {
 }
 
 #[derive(Accounts)]
+#[instruction(data: u64)]
 pub struct MintNFT<'info> {
     config: ProgramAccount<'info, Config>,
     #[account(
@@ -531,6 +549,8 @@ pub struct UpdateCandyMachine<'info> {
     authority: AccountInfo<'info>,
 }
 
+// 8+32+32+33+32+64+64+64+200
+
 #[account]
 #[derive(Default)]
 pub struct CandyMachine {
@@ -541,6 +561,7 @@ pub struct CandyMachine {
     pub data: CandyMachineData,
     pub items_redeemed: u64,
     pub bump: u8,
+    pub starbots: Vec<u64>,
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Default)]
@@ -635,6 +656,8 @@ pub enum ErrorCode {
     Uninitialized,
     #[msg("Mint Mismatch!")]
     MintMismatch,
+    #[msg("Your loot box has beed used!")]
+    MintLootBoxUsed,
     #[msg("Index greater than length!")]
     IndexGreaterThanLength,
     #[msg("Config must have atleast one entry!")]

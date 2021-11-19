@@ -43,6 +43,7 @@ if (!fs.existsSync(CACHE_PATH)) {
   fs.mkdirSync(CACHE_PATH);
 }
 
+// log.setLevel(log.levels.DEBUG);
 log.setLevel(log.levels.INFO);
 
 programCommand('upload')
@@ -439,6 +440,7 @@ programCommand('show')
       const machine = await anchorProgram.account.candyMachine.fetch(
         candyMachine,
       );
+
       log.info('...Candy Machine...');
       log.info('Key:', candyMachine.toBase58());
       //@ts-ignore
@@ -467,6 +469,8 @@ programCommand('show')
             new Date(machine.data.goLiveDate * 1000)
           : 'N/A',
       );
+
+      log.info('machine.starbots ===', machine.starbots.toString());
     } catch (e) {
       console.log('No machine found');
     }

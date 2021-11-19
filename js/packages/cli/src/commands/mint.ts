@@ -112,7 +112,7 @@ export async function mint(
   const masterEdition = await getMasterEdition(mint.publicKey);
 
   instructions.push(
-    await anchorProgram.instruction.mintNft({
+    await anchorProgram.instruction.mintNft(new anchor.BN(8), {
       accounts: {
         config: configAddress,
         candyMachine: candyMachineAddress,
