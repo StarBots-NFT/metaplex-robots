@@ -41,7 +41,7 @@ pub mod nft_candy_machine {
         msg!("token account.owner={}", token_nft_account.owner);
 
         if token_nft_account.amount != 1 {
-            return Err(ErrorCode::InvalidateBalance.into());
+            return Err(ErrorCode::InvalidBalance.into());
         };
 
         if token_nft_account.owner != candy_machine.authority {
@@ -684,6 +684,6 @@ pub enum ErrorCode {
     ConfigLineMismatch,
     #[msg("The Box did not tranfer to us")]
     DidNotTranferBox,
-    #[msg("Balance is invalidate")]
-    InvalidateBalance,
+    #[msg("Balance is invalid")]
+    InvalidBalance,
 }
