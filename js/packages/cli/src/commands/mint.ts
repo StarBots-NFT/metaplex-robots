@@ -13,7 +13,7 @@ import {
   TOKEN_PROGRAM_ID,
 } from '../helpers/constants';
 import * as anchor from '@project-serum/anchor';
-import { MintLayout, Token } from '@solana/spl-token';
+import { MintLayout, Token, AccountLayout } from '@solana/spl-token';
 import { createAssociatedTokenAccountInstruction } from '../helpers/instructions';
 import { sendTransactionWithRetryWithKeypair } from '../helpers/transactions';
 
@@ -23,14 +23,60 @@ export async function mint(
   configAddress: PublicKey,
   rpcUrl: string,
 ): Promise<string> {
+  // NFT MAIN Wallet
+  // const transferFrom = new anchor.web3.PublicKey("HWF6wWvChWW3z57pgn59hoPuTgQXVBazAys12Cj8Gied");
+
+  const transferFromATA = new anchor.web3.PublicKey("7i4YPvjfhRtUKuUghqJTrZzk7y8C5LX9NZm2FEnpe9sk");
+  // const transferTo = new anchor.web3.PublicKey("AMDhQ8UMRJmZ5HjgXGLpv6K4X8ECHMDRHpECXndRNH96");
+
+  const nftTokenAddress = new anchor.web3.PublicKey("DR19qAyjN5rSzaVcGx1vedsJr1hJXWJKp7bjLeGGaVJ9");
+
   const mint = Keypair.generate();
 
   const userKeyPair = loadWalletKey(keypair);
+
   const anchorProgram = await loadCandyProgram(userKeyPair, env, rpcUrl);
+
   const userTokenAccountAddress = await getTokenWallet(
     userKeyPair.publicKey,
     mint.publicKey,
   );
+
+  // Tài khoản trung gian
+  const transferToATAKeypair = new anchor.web3.Keypair();
+
+  const { connection } = anchorProgram.provider;
+
+  // https://explorer.solana.com/address/HJdiGaCEa7gg7dyNqkxWWkaGvDNxTHEzGkcCqDophJM7?cluster=devnet
+  const createTempTokenAccountIx = anchor.web3.SystemProgram.createAccount({
+    programId: TOKEN_PROGRAM_ID,
+    space: AccountLayout.span,
+    lamports: await connection.getMinimumBalanceForRentExemption(
+      AccountLayout.span
+    ),
+    fromPubkey: userKeyPair.publicKey,
+    newAccountPubkey: transferToATAKeypair.publicKey,
+  });
+
+  const initTempAccountIx = Token.createInitAccountInstruction(
+    TOKEN_PROGRAM_ID,
+    nftTokenAddress,
+    transferToATAKeypair.publicKey,
+    userKeyPair.publicKey,
+  );
+
+  const transferXTokensToTempAccIx = Token.createTransferInstruction(
+    TOKEN_PROGRAM_ID,
+    transferFromATA,
+    transferToATAKeypair.publicKey,
+    userKeyPair.publicKey,
+    [],
+    1
+  );
+
+
+
+
 
   const uuid = uuidFromConfigPubkey(configAddress);
   const [candyMachineAddress] = await getCandyMachineAddress(
@@ -42,8 +88,13 @@ export async function mint(
   );
 
   const remainingAccounts = [];
-  const signers = [mint, userKeyPair];
+  const signers = [mint, transferToATAKeypair, userKeyPair];
   const instructions = [
+    createTempTokenAccountIx,
+    initTempAccountIx,
+    transferXTokensToTempAccIx,
+
+
     anchor.web3.SystemProgram.createAccount({
       fromPubkey: userKeyPair.publicKey,
       newAccountPubkey: mint.publicKey,
@@ -122,6 +173,11 @@ export async function mint(
         mint: mint.publicKey,
         metadata: metadataAddress,
         masterEdition,
+
+        transferToAtaKeypair: transferToATAKeypair.publicKey,
+        nftHolderAddress: transferFromATA,
+        boxMetadataAddress: nftTokenAddress,
+
         mintAuthority: userKeyPair.publicKey,
         updateAuthority: userKeyPair.publicKey,
         tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,

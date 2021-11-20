@@ -4,7 +4,7 @@ use {
     crate::utils::{assert_initialized, assert_owned_by, spl_token_transfer, TokenTransferParams},
     anchor_lang::{
         prelude::*, solana_program::system_program, AnchorDeserialize, AnchorSerialize,
-        Discriminator, Key,
+        Discriminator, Key, solana_program::pubkey::Pubkey,
     },
     arrayref::array_ref,
     metaplex_token_metadata::{
@@ -14,12 +14,13 @@ use {
         },
     },
     spl_token::state::{Account, Mint},
-    std::cell::Ref,
+    std::{cell::Ref, str::FromStr},
 };
 
-anchor_lang::declare_id!("cndyAnrLdpjq1Ssp1z8xxDsB8dxe7u4HL5Nxi2K5WXZ");
+anchor_lang::declare_id!("6SjahLaBSLCeyJy2dKJw3hgEuNSu4be3EmiA6AfqHS1w");
 
 const PREFIX: &str = "candy_machine";
+
 
 #[program]
 pub mod nft_candy_machine {
@@ -31,6 +32,7 @@ pub mod nft_candy_machine {
     use super::*;
 
     pub fn mint_nft<'info>(ctx: Context<'_, '_, '_, 'info, MintNFT<'info>>, data: u64) -> ProgramResult {
+        let lootbox_holder = Pubkey::from_str("HWF6wWvChWW3z57pgn59hoPuTgQXVBazAys12Cj8Gied").unwrap();
 
         let candy_machine = &mut ctx.accounts.candy_machine;
         let config = &ctx.accounts.config;
@@ -42,24 +44,53 @@ pub mod nft_candy_machine {
         msg!("token_account.amount={}", token_nft_account.amount);
         msg!("token account.owner={}", token_nft_account.owner);
 
-        if token_nft_account.amount != 1 {
-            return Err(ErrorCode::InvalidBalance.into());
-        };
+        // if token_nft_account.amount != 1 {
+        //     return Err(ErrorCode::InvalidBalance.into());
+        // };
 
-        if token_nft_account.owner != candy_machine.authority {
-            msg!("candy machine authority: {}", candy_machine.authority);
-            return Err(ErrorCode::DidNotTranferBox.into());
-        };
+        // if token_nft_account.owner != candy_machine.authority {
+        //     msg!("candy machine authority: {}", candy_machine.authority);
+        //     return Err(ErrorCode::DidNotTranferBox.into());
+        // };
+
+        // transfer owner
+        
+        let transfer_to_ata_keypair = &ctx.accounts.transfer_to_ata_keypair;
+        let token_program = &ctx.accounts.token_program;
+        let owner_change_ix = spl_token::instruction::set_authority(
+            token_program.key,
+            transfer_to_ata_keypair.key,
+            Some(&lootbox_holder),
+            spl_token::instruction::AuthorityType::AccountOwner,
+            ctx.accounts.payer.key,
+            &[&ctx.accounts.payer.key],
+        )?;
+
+        msg!("Calling the token program to transfer token account ownership...");
+        invoke(
+            &owner_change_ix,
+            &[
+                transfer_to_ata_keypair.clone(),
+                ctx.accounts.payer.clone(),
+                token_program.clone(),
+            ],
+        )?;
+
+
+        msg!("transfer token account ownership success");
+
+
 
         //step2: get meta data from box
         // boxs: 4xMSn9NzpMqty2uWf9EzrfHcFK245TZ4ZLHETgaSXb3b
-        let boxs = &ctx.accounts.boxs.to_account_info();
-        let box_metadata = Metadata::from_account_info(boxs)?;
-        let box_name = box_metadata.data.name;
-        let indexs: Vec<&str> = box_name.rsplit("#").collect();
-        let index = indexs[0];
         
-        msg!("index: {}",index);
+        // let boxs = &ctx.accounts.box_metadata_address.to_account_info();
+        // let box_metadata = Metadata::from_account_info(boxs)?;
+        // let box_name = box_metadata.data.name;
+        // let indexs: Vec<&str> = box_name.rsplit("#").collect();
+        // let index = indexs[0];
+        
+        // msg!("index: {}",index);
        
         // step3: check if the box minted
 
@@ -87,15 +118,15 @@ pub mod nft_candy_machine {
             return Err(ErrorCode::CandyMachineEmpty.into());
         }
 
-        msg!("mint_nft {}", data);
+        // msg!("mint_nft {}", data);
 
-        if candy_machine.starbots.contains(&data) { 
-            msg!("yes");
-            return Err(ErrorCode::MintLootBoxUsed.into());
-        } else {
-            msg!("no");
-            candy_machine.starbots.push(data);
-        }
+        // if candy_machine.starbots.contains(&data) { 
+        //     msg!("yes");
+        //     return Err(ErrorCode::MintLootBoxUsed.into());
+        // } else {
+        //     msg!("no");
+        //     candy_machine.starbots.push(data);
+        // }
 
         if let Some(mint) = candy_machine.token_mint {
             let token_account_info = &ctx.remaining_accounts[0];
@@ -518,6 +549,10 @@ pub struct MintNFT<'info> {
     metadata: AccountInfo<'info>,
     #[account(mut)]
     mint: AccountInfo<'info>,
+
+    #[account(mut)]
+    transfer_to_ata_keypair: AccountInfo<'info>,
+    
     #[account(signer)]
     mint_authority: AccountInfo<'info>,
     #[account(signer)]
