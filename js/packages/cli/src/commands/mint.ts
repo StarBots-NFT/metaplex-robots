@@ -26,10 +26,10 @@ export async function mint(
   // NFT MAIN Wallet
   // const transferFrom = new anchor.web3.PublicKey("HWF6wWvChWW3z57pgn59hoPuTgQXVBazAys12Cj8Gied");
 
-  const transferFromATA = new anchor.web3.PublicKey("7i4YPvjfhRtUKuUghqJTrZzk7y8C5LX9NZm2FEnpe9sk");
+  const transferFromATA = new anchor.web3.PublicKey("4iKJ7BmNJJsYkNQnA2BZvMeJAYfvvhsQxNJNNvM5TY9m");
   // const transferTo = new anchor.web3.PublicKey("AMDhQ8UMRJmZ5HjgXGLpv6K4X8ECHMDRHpECXndRNH96");
 
-  const nftTokenAddress = new anchor.web3.PublicKey("DR19qAyjN5rSzaVcGx1vedsJr1hJXWJKp7bjLeGGaVJ9");
+  const nftTokenAddress = new anchor.web3.PublicKey("5V7sJn8Svf6n2NAPMxVbvQfpK3omSGNzsjCZXuDKXi9V");
 
   const mint = Keypair.generate();
 
