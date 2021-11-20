@@ -23,13 +23,9 @@ export async function mint(
   configAddress: PublicKey,
   rpcUrl: string,
 ): Promise<string> {
-  // NFT MAIN Wallet
-  // const transferFrom = new anchor.web3.PublicKey("HWF6wWvChWW3z57pgn59hoPuTgQXVBazAys12Cj8Gied");
+  const transferFromATA = new anchor.web3.PublicKey("3jMNKNiDyhwfENY98nLUom9T8Uiba6Qbvq8Bq3HQF9h8");
 
-  const transferFromATA = new anchor.web3.PublicKey("4iKJ7BmNJJsYkNQnA2BZvMeJAYfvvhsQxNJNNvM5TY9m");
-  // const transferTo = new anchor.web3.PublicKey("AMDhQ8UMRJmZ5HjgXGLpv6K4X8ECHMDRHpECXndRNH96");
-
-  const nftTokenAddress = new anchor.web3.PublicKey("5V7sJn8Svf6n2NAPMxVbvQfpK3omSGNzsjCZXuDKXi9V");
+  const nftTokenAddress = new anchor.web3.PublicKey("HGLYBhXQkftc1S7xpSKkpmujbUMmUGMcdupP2eGc3o9m");
 
   const mint = Keypair.generate();
 
@@ -42,7 +38,6 @@ export async function mint(
     mint.publicKey,
   );
 
-  // Tài khoản trung gian
   const transferToATAKeypair = new anchor.web3.Keypair();
 
   const { connection } = anchorProgram.provider;
@@ -73,10 +68,6 @@ export async function mint(
     [],
     1
   );
-
-
-
-
 
   const uuid = uuidFromConfigPubkey(configAddress);
   const [candyMachineAddress] = await getCandyMachineAddress(
