@@ -684,16 +684,23 @@ programCommand('update_candy_machine')
   });
 
 programCommand('mint_one_token')
+  .argument(
+    '<nft_address>',
+    'A NFT public key',
+    val => {
+      return new PublicKey(val);
+    },
+  )
   .option(
     '-r, --rpc-url <string>',
     'custom rpc url since this is a heavy command',
   )
-  .action(async (directory, cmd) => {
+  .action(async (nft_address: PublicKey, options, cmd) => {
     const { keypair, env, cacheName, rpcUrl } = cmd.opts();
 
     const cacheContent = loadCache(cacheName, env);
     const configAddress = new PublicKey(cacheContent.program.config);
-    const tx = await mint(keypair, env, configAddress, rpcUrl);
+    const tx = await mint(keypair, nft_address, env, configAddress, rpcUrl);
 
     log.info('mint_one_token finished', tx);
   });

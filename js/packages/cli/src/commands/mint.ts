@@ -1,4 +1,5 @@
 import { Keypair, PublicKey, SystemProgram } from '@solana/web3.js';
+import { get } from 'dot-prop';
 import {
   getCandyMachineAddress,
   getMasterEdition,
@@ -13,19 +14,22 @@ import {
   TOKEN_PROGRAM_ID,
 } from '../helpers/constants';
 import * as anchor from '@project-serum/anchor';
-import { MintLayout, Token, AccountLayout } from '@solana/spl-token';
+import { MintLayout, Token } from '@solana/spl-token';
 import { createAssociatedTokenAccountInstruction } from '../helpers/instructions';
 import { sendTransactionWithRetryWithKeypair } from '../helpers/transactions';
+import transferToken from '../helpers/transfer-token';
 
 export async function mint(
   keypair: string,
+  nftTokenAddress: PublicKey,
   env: string,
   configAddress: PublicKey,
   rpcUrl: string,
 ): Promise<string> {
-  const transferFromATA = new anchor.web3.PublicKey("3jMNKNiDyhwfENY98nLUom9T8Uiba6Qbvq8Bq3HQF9h8");
 
-  const nftTokenAddress = new anchor.web3.PublicKey("HGLYBhXQkftc1S7xpSKkpmujbUMmUGMcdupP2eGc3o9m");
+  let transferFromATA: null | anchor.web3.PublicKey = null;
+
+  let amount: number = 0;
 
   const mint = Keypair.generate();
 
@@ -42,32 +46,39 @@ export async function mint(
 
   const { connection } = anchorProgram.provider;
 
-  // https://explorer.solana.com/address/HJdiGaCEa7gg7dyNqkxWWkaGvDNxTHEzGkcCqDophJM7?cluster=devnet
-  const createTempTokenAccountIx = anchor.web3.SystemProgram.createAccount({
-    programId: TOKEN_PROGRAM_ID,
-    space: AccountLayout.span,
-    lamports: await connection.getMinimumBalanceForRentExemption(
-      AccountLayout.span
-    ),
-    fromPubkey: userKeyPair.publicKey,
-    newAccountPubkey: transferToATAKeypair.publicKey,
-  });
+  const { value } = await connection.getParsedTokenAccountsByOwner(
+    userKeyPair.publicKey,
+    {
+      programId: TOKEN_PROGRAM_ID
+    }
+  );
 
-  const initTempAccountIx = Token.createInitAccountInstruction(
-    TOKEN_PROGRAM_ID,
+  for(let i = 0; i < value.length; i += 1) {
+    const tokenAta = get(value[i], 'pubkey');
+    const data = get(value[i], 'account.data.parsed');
+    const mint = get(data, 'info.mint');
+  
+    if(nftTokenAddress.toBase58() === mint) {
+      transferFromATA = new anchor.web3.PublicKey(tokenAta);
+      amount = parseInt(get(data, 'info.tokenAmount.amount'));
+    }
+  }
+
+  if(!transferFromATA) {
+    throw new Error(`Not found associated token account for ${nftTokenAddress.toBase58()}`);
+  }
+
+  if(amount === 0) {
+    throw new Error(`Amount should be greater than zero for ${nftTokenAddress.toBase58()}`);
+  }
+
+  const transferTokenInstruction = await transferToken({
+    connection,
+    userPublicKey: userKeyPair.publicKey,
+    newAtaTokenAdressPublicKey: transferToATAKeypair.publicKey,
     nftTokenAddress,
-    transferToATAKeypair.publicKey,
-    userKeyPair.publicKey,
-  );
-
-  const transferXTokensToTempAccIx = Token.createTransferInstruction(
-    TOKEN_PROGRAM_ID,
-    transferFromATA,
-    transferToATAKeypair.publicKey,
-    userKeyPair.publicKey,
-    [],
-    1
-  );
+    transferFromATA
+  });
 
   const uuid = uuidFromConfigPubkey(configAddress);
   const [candyMachineAddress] = await getCandyMachineAddress(
@@ -81,10 +92,7 @@ export async function mint(
   const remainingAccounts = [];
   const signers = [mint, transferToATAKeypair, userKeyPair];
   const instructions = [
-    createTempTokenAccountIx,
-    initTempAccountIx,
-    transferXTokensToTempAccIx,
-
+    ...transferTokenInstruction,
 
     anchor.web3.SystemProgram.createAccount({
       fromPubkey: userKeyPair.publicKey,
@@ -154,7 +162,7 @@ export async function mint(
   const masterEdition = await getMasterEdition(mint.publicKey);
 
   instructions.push(
-    await anchorProgram.instruction.mintNft(new anchor.BN(8), {
+    await anchorProgram.instruction.mintNft({
       accounts: {
         config: configAddress,
         candyMachine: candyMachineAddress,
@@ -167,7 +175,7 @@ export async function mint(
 
         transferToAtaKeypair: transferToATAKeypair.publicKey,
         nftHolderAddress: transferFromATA,
-        boxMetadataAddress: nftTokenAddress,
+        boxMetadataAddress: await getMetadata(nftTokenAddress),
 
         mintAuthority: userKeyPair.publicKey,
         updateAuthority: userKeyPair.publicKey,
