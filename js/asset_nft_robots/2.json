@@ -1,9 +1,9 @@
 {
-    "name": "starbots",
+    "name": "Starbots Robot #2",
     "symbol": "",
     "description": "celebratory",
     "seller_fee_basis_points": 0,
-    "image": "6.png",
+    "image": "2.png",
     "external_url": "https://starbots.net",
     "attributes": [
         {
@@ -48,18 +48,18 @@
         }
     ],
     "collection": {
-        "name": "Starbots NFT 1st Launch",
+        "name": "Starbots NFT Robots 1st Launch",
         "family": "Starbots NFT"
     },
     "properties": {
         "files": {
             "type": "image/png",
-            "uri": "6.png"
+            "uri": "2.png"
         },
         "category": "image",
         "creators": [
             {
-                "address": "4TDmqAFCZJ2MBmsAU9DS2XzUcscU5TdNig3SdYpEM8Dy",
+                "address": "AMDhQ8UMRJmZ5HjgXGLpv6K4X8ECHMDRHpECXndRNH96",
                 "share": 100
             }
         ]

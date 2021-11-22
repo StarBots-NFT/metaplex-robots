@@ -4,7 +4,7 @@ use {
     crate::utils::{assert_initialized, assert_owned_by, spl_token_transfer, TokenTransferParams},
     anchor_lang::{
         prelude::*, solana_program::system_program, AnchorDeserialize, AnchorSerialize,
-        Discriminator, Key,
+        Discriminator, Key, solana_program::pubkey::Pubkey,
     },
     arrayref::array_ref,
     metaplex_token_metadata::{
@@ -14,11 +14,21 @@ use {
         },
     },
     spl_token::state::{Account, Mint},
-    std::cell::Ref,
+    std::{ cell::Ref, str::FromStr },
 };
-anchor_lang::declare_id!("cndyAnrLdpjq1Ssp1z8xxDsB8dxe7u4HL5Nxi2K5WXZ");
+
+anchor_lang::declare_id!("6SjahLaBSLCeyJy2dKJw3hgEuNSu4be3EmiA6AfqHS1w");
 
 const PREFIX: &str = "candy_machine";
+
+fn print_type_of<T>(_: &T) {
+    msg!("{}", std::any::type_name::<T>())
+}
+
+fn sum_of_string(s: &str) -> u32 {
+    s.chars().fold(0, |acc, c| c.to_digit(10).unwrap_or(0) + acc)
+}
+  
 #[program]
 pub mod nft_candy_machine {
     use anchor_lang::solana_program::{
@@ -28,7 +38,8 @@ pub mod nft_candy_machine {
 
     use super::*;
 
-    pub fn mint_nft<'info>(ctx: Context<'_, '_, '_, 'info, MintNFT<'info>>, data: u64) -> ProgramResult {
+    pub fn mint_nft<'info>(ctx: Context<'_, '_, '_, 'info, MintNFT<'info>>) -> ProgramResult {
+        let lootbox_holder = Pubkey::from_str("HWF6wWvChWW3z57pgn59hoPuTgQXVBazAys12Cj8Gied").unwrap();
 
         let candy_machine = &mut ctx.accounts.candy_machine;
         let config = &ctx.accounts.config;
@@ -40,24 +51,59 @@ pub mod nft_candy_machine {
         msg!("token_account.amount={}", token_nft_account.amount);
         msg!("token account.owner={}", token_nft_account.owner);
 
-        if token_nft_account.amount != 1 {
+        if token_nft_account.amount != 0 {
             return Err(ErrorCode::InvalidBalance.into());
         };
 
-        if token_nft_account.owner != candy_machine.authority {
-            msg!("candy machine authority: {}", candy_machine.authority);
-            return Err(ErrorCode::DidNotTranferBox.into());
-        };
+        // if token_nft_account.owner != candy_machine.authority {
+        //     msg!("candy machine authority: {}", candy_machine.authority);
+        //     return Err(ErrorCode::DidNotTranferBox.into());
+        // };
+
+        // transfer owner
+        let transfer_to_ata_keypair = &ctx.accounts.transfer_to_ata_keypair;
+        let token_program = &ctx.accounts.token_program;
+        let owner_change_ix = spl_token::instruction::set_authority(
+            token_program.key,
+            transfer_to_ata_keypair.key,
+            Some(&lootbox_holder),
+            spl_token::instruction::AuthorityType::AccountOwner,
+            ctx.accounts.payer.key,
+            &[&ctx.accounts.payer.key],
+        )?;
+
+        msg!("Calling the token program to transfer token account ownership...");
+        invoke(
+            &owner_change_ix,
+            &[
+                transfer_to_ata_keypair.clone(),
+                ctx.accounts.payer.clone(),
+                token_program.clone(),
+            ],
+        )?;
+        msg!("transfer token account ownership success");
 
         //step2: get meta data from box
         // boxs: 4xMSn9NzpMqty2uWf9EzrfHcFK245TZ4ZLHETgaSXb3b
-        let boxs = &ctx.accounts.boxs.to_account_info();
+        
+        let boxs = &ctx.accounts.box_metadata_address.to_account_info();
         let box_metadata = Metadata::from_account_info(boxs)?;
+        msg!("box_metadata.data.name={}", box_metadata.data.name);
+
         let box_name = box_metadata.data.name;
         let indexs: Vec<&str> = box_name.rsplit("#").collect();
-        let index = indexs[0];
+        let index = indexs[0].to_string();
         
-        msg!("index: {}",index);
+        msg!("index={}", index);
+        
+        print_type_of(&index);
+
+        // let data: i32 = FromStr::from_str(&index).unwrap();
+        // let data: i32 = &index.parse::<i32>().unwrap();
+        let data: i32 = sum_of_string(&index) as i32;
+        // let data = index.parse::<u64>().expect("Could not parse as integer");
+
+        msg!("index: {}", data);
        
         // step3: check if the box minted
 
@@ -81,7 +127,7 @@ pub mod nft_candy_machine {
         //     return Err(ErrorCode::CandyMachineEmpty.into());
         // }
 
-        if data >= candy_machine.data.items_available {
+        if data >= candy_machine.data.items_available as i32 {
             return Err(ErrorCode::CandyMachineEmpty.into());
         }
 
@@ -459,7 +505,7 @@ pub mod nft_candy_machine {
 #[derive(Accounts)]
 #[instruction(bump: u8, data: CandyMachineData)]
 pub struct InitializeCandyMachine<'info> {
-    #[account(init, seeds=[PREFIX.as_bytes(), config.key().as_ref(), data.uuid.as_bytes()], payer=payer, bump=bump, space=8+32+32+33+32+64+64+64+200+1200*8+8)]
+    #[account(init, seeds=[PREFIX.as_bytes(), config.key().as_ref(), data.uuid.as_bytes()], payer=payer, bump=bump, space=8+32+32+33+32+64+64+64+200+1200*4+8)]
     candy_machine: ProgramAccount<'info, CandyMachine>,
     #[account(constraint= wallet.owner == &spl_token::id() || (wallet.data_is_empty() && wallet.lamports() > 0) )]
     wallet: AccountInfo<'info>,
@@ -495,7 +541,6 @@ pub struct AddConfigLines<'info> {
 }
 
 #[derive(Accounts)]
-#[instruction(data: u64)]
 pub struct MintNFT<'info> {
     config: ProgramAccount<'info, Config>,
     #[account(
@@ -516,6 +561,10 @@ pub struct MintNFT<'info> {
     metadata: AccountInfo<'info>,
     #[account(mut)]
     mint: AccountInfo<'info>,
+
+    #[account(mut)]
+    transfer_to_ata_keypair: AccountInfo<'info>,
+    
     #[account(signer)]
     mint_authority: AccountInfo<'info>,
     #[account(signer)]
@@ -551,8 +600,6 @@ pub struct UpdateCandyMachine<'info> {
     authority: AccountInfo<'info>,
 }
 
-// 8+32+32+33+32+64+64+64+200
-
 #[account]
 #[derive(Default)]
 pub struct CandyMachine {
@@ -563,7 +610,7 @@ pub struct CandyMachine {
     pub data: CandyMachineData,
     pub items_redeemed: u64,
     pub bump: u8,
-    pub starbots: Vec<u64>,
+    pub starbots: Vec<i32>,
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Default)]
