@@ -40,6 +40,8 @@ pub mod nft_candy_machine {
 
     pub fn mint_nft<'info>(ctx: Context<'_, '_, '_, 'info, MintNFT<'info>>) -> ProgramResult {
         let lootbox_holder = Pubkey::from_str("HWF6wWvChWW3z57pgn59hoPuTgQXVBazAys12Cj8Gied").unwrap();
+        // who issues NFT lootbox
+        let lootbox_issuer = Pubkey::from_str("4TDmqAFCZJ2MBmsAU9DS2XzUcscU5TdNig3SdYpEM8Dy").unwrap();
 
         let candy_machine = &mut ctx.accounts.candy_machine;
         let config = &ctx.accounts.config;
@@ -60,38 +62,54 @@ pub mod nft_candy_machine {
         //     return Err(ErrorCode::DidNotTranferBox.into());
         // };
 
-        // transfer owner
-        let transfer_to_ata_keypair = &ctx.accounts.transfer_to_ata_keypair;
-        let token_program = &ctx.accounts.token_program;
-        let owner_change_ix = spl_token::instruction::set_authority(
-            token_program.key,
-            transfer_to_ata_keypair.key,
-            Some(&lootbox_holder),
-            spl_token::instruction::AuthorityType::AccountOwner,
-            ctx.accounts.payer.key,
-            &[&ctx.accounts.payer.key],
-        )?;
-
-        msg!("Calling the token program to transfer token account ownership...");
-        invoke(
-            &owner_change_ix,
-            &[
-                transfer_to_ata_keypair.clone(),
-                ctx.accounts.payer.clone(),
-                token_program.clone(),
-            ],
-        )?;
-        msg!("transfer token account ownership success");
-
         //step2: get meta data from box
         // boxs: 4xMSn9NzpMqty2uWf9EzrfHcFK245TZ4ZLHETgaSXb3b
         
         let boxs = &ctx.accounts.box_metadata_address.to_account_info();
         let box_metadata = Metadata::from_account_info(boxs)?;
+        // data struct
+        // https://github.com/metaplex-foundation/metaplex/blob/master/rust/token-metadata/program/src/state.rs#L86
+        msg!("box_metadata.data.name={}", box_metadata.data.name);
+        msg!("box_metadata.update_authority={}", box_metadata.update_authority);
         msg!("box_metadata.data.name={}", box_metadata.data.name);
         msg!("box_metadata.data.name={}", box_metadata.data.name);
-        msg!("box_metadata.data.name={}", box_metadata.data.name);
-        msg!("box_metadata.data.name={}", box_metadata.data.name);
+
+        // case 1: check if lootbox is issue by us
+        if box_metadata.update_authority != lootbox_issuer {
+            msg!("Your lootbox is not issue by us");
+            return Err(ErrorCode::LootBoxInvaild.into());
+        }
+
+        // case 2: temp account balance must larger than 0
+        let transfer_to_ata_keypair = &ctx.accounts.transfer_to_ata_keypair;
+        let transfer_to_nft_account_info: spl_token::state::Account = assert_initialized(&transfer_to_ata_keypair)?;
+        msg!("transfer_to_nft_account_info.amount={}", transfer_to_nft_account_info.amount);
+        msg!("transfer_to_nft_account_info.owner={}", transfer_to_nft_account_info.owner);
+
+
+
+        // // transfer owner
+        // let token_program = &ctx.accounts.token_program;
+        // let owner_change_ix = spl_token::instruction::set_authority(
+        //     token_program.key,
+        //     transfer_to_ata_keypair.key,
+        //     Some(&lootbox_holder),
+        //     spl_token::instruction::AuthorityType::AccountOwner,
+        //     ctx.accounts.payer.key,
+        //     &[&ctx.accounts.payer.key],
+        // )?;
+
+        // msg!("Calling the token program to transfer token account ownership...");
+        // invoke(
+        //     &owner_change_ix,
+        //     &[
+        //         transfer_to_ata_keypair.clone(),
+        //         ctx.accounts.payer.clone(),
+        //         token_program.clone(),
+        //     ],
+        // )?;
+        // msg!("transfer token account ownership success");
+
 
         // let box_name = box_metadata.data.name;
         // let indexs: Vec<&str> = box_name.rsplit("#").collect();
@@ -736,4 +754,6 @@ pub enum ErrorCode {
     DidNotTranferBox,
     #[msg("Balance is invalid")]
     InvalidBalance,
+    #[msg("Your loot box is not issue by us!")]
+    LootBoxInvaild,
 }

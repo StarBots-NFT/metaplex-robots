@@ -238,6 +238,7 @@ async function awaitTransactionSignatureConfirmation(
             } else if (status.err) {
               log.error('REST error for', txid, status);
               done = true;
+              console.log('123', status.err);
               reject(status.err);
             } else if (!status.confirmations) {
               log.error('REST no confirmations for', txid, status);
