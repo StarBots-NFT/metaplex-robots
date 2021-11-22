@@ -71,8 +71,6 @@ pub mod nft_candy_machine {
         // https://github.com/metaplex-foundation/metaplex/blob/master/rust/token-metadata/program/src/state.rs#L86
         msg!("box_metadata.data.name={}", box_metadata.data.name);
         msg!("box_metadata.update_authority={}", box_metadata.update_authority);
-        msg!("box_metadata.data.name={}", box_metadata.data.name);
-        msg!("box_metadata.data.name={}", box_metadata.data.name);
 
         // case 1: check if lootbox is issue by us
         if box_metadata.update_authority != lootbox_issuer {
@@ -83,9 +81,18 @@ pub mod nft_candy_machine {
         // case 2: temp account balance must larger than 0
         let transfer_to_ata_keypair = &ctx.accounts.transfer_to_ata_keypair;
         let transfer_to_nft_account_info: spl_token::state::Account = assert_initialized(&transfer_to_ata_keypair)?;
-        msg!("transfer_to_nft_account_info.amount={}", transfer_to_nft_account_info.amount);
-        msg!("transfer_to_nft_account_info.owner={}", transfer_to_nft_account_info.owner);
+        if transfer_to_nft_account_info.amount == 0 {
+            msg!("Temp account balance is invalid");
+            msg!("transfer_to_nft_account_info.amount={}", transfer_to_nft_account_info.amount);
+            return Err(ErrorCode::InvalidBalance.into());
+        };
 
+        // case 3: temp account owner should be payer
+        if transfer_to_nft_account_info.owner != *ctx.accounts.payer.key {
+            msg!("Temp account owner must be payer");
+            return Err(ErrorCode::TempAccountOwnerMustBePayer.into());
+        };
+       
 
 
         // // transfer owner
@@ -756,4 +763,6 @@ pub enum ErrorCode {
     InvalidBalance,
     #[msg("Your loot box is not issue by us!")]
     LootBoxInvaild,
+    #[msg("Temp account owner must be payer")]
+    TempAccountOwnerMustBePayer,
 }
