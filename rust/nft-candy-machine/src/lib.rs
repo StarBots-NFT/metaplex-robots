@@ -17,7 +17,7 @@ use {
     std::{ cell::Ref, str::FromStr },
 };
 
-anchor_lang::declare_id!("6SjahLaBSLCeyJy2dKJw3hgEuNSu4be3EmiA6AfqHS1w");
+anchor_lang::declare_id!("H4AgvHT31RU9GKx3rPtttdhfsb9k6BLGnNR2CkfQvQto");
 
 const PREFIX: &str = "candy_machine";
 

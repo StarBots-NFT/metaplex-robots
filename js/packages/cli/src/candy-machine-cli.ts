@@ -220,9 +220,6 @@ programCommand('verify')
     await Promise.all(
       chunks(Array.from(Array(keys.length).keys()), 500).map(
         async allIndexesInSlice => {
-          try {
-
-          
           for (let i = 0; i < allIndexesInSlice.length; i++) {
             const key = keys[allIndexesInSlice[i]];
             log.debug('Looking at key ', allIndexesInSlice[i]);
@@ -240,7 +237,7 @@ programCommand('verify')
               //leaving here for debugging reasons, but it's pretty useless. if the first upload fails - all others are wrong
               log.info(
                 `Name (${name}) or uri (${uri}) didnt match cache values of (${cacheItem.name})` +
-                `and (${cacheItem.link}). marking to rerun for image`,
+                  `and (${cacheItem.link}). marking to rerun for image`,
                 key,
               );
               cacheItem.onChain = false;
@@ -328,13 +325,6 @@ programCommand('verify')
               }
             }
           }
-
-
-
-          } catch(err) {
-            console.log(err, '123');
-          }
-
         },
       ),
     );
@@ -684,13 +674,9 @@ programCommand('update_candy_machine')
   });
 
 programCommand('mint_one_token')
-  .argument(
-    '<nft_address>',
-    'A NFT public key',
-    val => {
-      return new PublicKey(val);
-    },
-  )
+  .argument('<nft_address>', 'A NFT public key', val => {
+    return new PublicKey(val);
+  })
   .option(
     '-r, --rpc-url <string>',
     'custom rpc url since this is a heavy command',
