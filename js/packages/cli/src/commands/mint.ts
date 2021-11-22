@@ -57,7 +57,10 @@ export async function mint(
     const data = get(value[i], 'account.data.parsed');
     const mint = get(data, 'info.mint');
 
-    if (nftTokenAddress.toBase58() === mint) {
+    if (
+      nftTokenAddress.toBase58() === mint &&
+      parseInt(get(data, 'info.tokenAmount.amount')) > 0
+    ) {
       transferFromATA = new anchor.web3.PublicKey(tokenAta);
       amount = parseInt(get(data, 'info.tokenAmount.amount'));
     }
@@ -186,6 +189,9 @@ export async function mint(
 
         // metadata address for NFT
         boxMetadataAddress: await getMetadata(nftTokenAddress),
+
+        // nft address
+        nftTokenAddress,
 
         mintAuthority: userKeyPair.publicKey,
         updateAuthority: userKeyPair.publicKey,

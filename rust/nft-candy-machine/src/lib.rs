@@ -80,7 +80,11 @@ pub mod nft_candy_machine {
 
         // case 2: temp account balance must larger than 0
         let transfer_to_ata_keypair = &ctx.accounts.transfer_to_ata_keypair;
+        // data struct
+        // https://github.com/solana-labs/solana-program-library/blob/master/token/program-2022/src/state.rs#L86
         let transfer_to_nft_account_info: spl_token::state::Account = assert_initialized(&transfer_to_ata_keypair)?;
+        msg!("transfer_to_nft_account_info.mint={}", transfer_to_nft_account_info.mint);
+
         if transfer_to_nft_account_info.amount == 0 {
             msg!("Temp account balance is invalid");
             msg!("transfer_to_nft_account_info.amount={}", transfer_to_nft_account_info.amount);
@@ -93,6 +97,13 @@ pub mod nft_candy_machine {
             return Err(ErrorCode::TempAccountOwnerMustBePayer.into());
         };
        
+
+
+        
+        let nft_token_address = &ctx.accounts.nft_token_address;
+        msg!("nft_token_address.key={}", nft_token_address.key);
+
+
 
 
         // // transfer owner
@@ -587,6 +598,10 @@ pub struct MintNFT<'info> {
     // through to token-metadata which will do all the validations we need on them.
     #[account(mut)]
     metadata: AccountInfo<'info>,
+
+    #[account()]
+    nft_token_address: AccountInfo<'info>,
+
     #[account(mut)]
     mint: AccountInfo<'info>,
 
