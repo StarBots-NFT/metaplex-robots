@@ -93,6 +93,7 @@ pub mod nft_candy_machine {
         };
 
         // case 3: temp account owner should be payer
+        // make sure that user can't mint nft robot twice
         if transfer_to_nft_account_info.owner != *ctx.accounts.payer.key {
             msg!("Temp account owner must be payer");
             return Err(ErrorCode::TempAccountOwnerMustBePayer.into());
