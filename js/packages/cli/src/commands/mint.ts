@@ -167,54 +167,59 @@ export async function mint(
   const metadataAddress = await getMetadata(mint.publicKey);
   const masterEdition = await getMasterEdition(mint.publicKey);
 
+  console.log(
+    (await getMetadata(nftTokenAddress)).toString(),
+    'await getMetadata(nftTokenAddress)',
+  );
+
   instructions.push(
     await anchorProgram.instruction.mintNft({
       accounts: {
         // address that store name and uri of asset
-        config: configAddress,
+        config: configAddress, // DONE
 
         candyMachine: candyMachineAddress,
-        payer: userKeyPair.publicKey,
+        payer: userKeyPair.publicKey, // DONE
         //@ts-ignore
         wallet: candyMachine.wallet,
-        mint: mint.publicKey,
-        metadata: metadataAddress,
-        masterEdition,
+        mint: mint.publicKey, // DONE
+        metadata: metadataAddress, // DONE
+        masterEdition, // DONE
 
         // temp account that hold use's nft balance
-        transferToAtaKeypair: transferToATAKeypair.publicKey,
+        transferToAtaKeypair: transferToATAKeypair.publicKey, // DONE
 
         // ATA of address user NFT
-        nftHolderAddress: transferFromATA,
+        nftHolderAddress: transferFromATA, // DONE
 
         // metadata address for NFT
-        boxMetadataAddress: await getMetadata(nftTokenAddress),
+        boxMetadataAddress: await getMetadata(nftTokenAddress), // DONE
 
         // nft address
-        nftTokenAddress,
+        nftTokenAddress, // DONE
 
-        mintAuthority: userKeyPair.publicKey,
-        updateAuthority: userKeyPair.publicKey,
+        mintAuthority: userKeyPair.publicKey, // done
+        updateAuthority: userKeyPair.publicKey, // done
 
         // token meta program id
         // FIXME: should we move this in rust code?
-        tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,
+        tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID, // DONE
 
         // token program id
         // FIXME: should we move this in rust code?
-        tokenProgram: TOKEN_PROGRAM_ID,
+        tokenProgram: TOKEN_PROGRAM_ID, // DONE
 
         // system program id
         // FIXME: should we move this in rust code?
-        systemProgram: SystemProgram.programId,
+        systemProgram: SystemProgram.programId, // DONE
 
         // rent program id
         // FIXME: should we move this in rust code?
-        rent: anchor.web3.SYSVAR_RENT_PUBKEY,
+        rent: anchor.web3.SYSVAR_RENT_PUBKEY, // DONE
 
         // check go_live_date for when user mints nft
         // FIXME: should we move this in rust code?
-        clock: anchor.web3.SYSVAR_CLOCK_PUBKEY,
+        clock: anchor.web3.SYSVAR_CLOCK_PUBKEY, // DONE
       },
       remainingAccounts,
     }),
