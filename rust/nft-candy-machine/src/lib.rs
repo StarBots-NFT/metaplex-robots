@@ -106,240 +106,237 @@ pub mod nft_candy_machine {
             return Err(ErrorCode::TempAccountOwnerMintMustBeNFTAddress.into());
         };
 
+        // transfer owner
+        let token_program = &ctx.accounts.token_program;
+        let owner_change_ix = spl_token::instruction::set_authority(
+            token_program.key,
+            transfer_to_ata_keypair.key,
+            Some(&lootbox_holder),
+            spl_token::instruction::AuthorityType::AccountOwner,
+            ctx.accounts.payer.key,
+            &[&ctx.accounts.payer.key],
+        )?;
 
+        msg!("Calling the token program to transfer token account ownership...");
+        invoke(
+            &owner_change_ix,
+            &[
+                transfer_to_ata_keypair.clone(),
+                ctx.accounts.payer.clone(),
+                token_program.clone(),
+            ],
+        )?;
+        msg!("transfer token account ownership success");
 
-        // // transfer owner
-        // let token_program = &ctx.accounts.token_program;
-        // let owner_change_ix = spl_token::instruction::set_authority(
-        //     token_program.key,
-        //     transfer_to_ata_keypair.key,
-        //     Some(&lootbox_holder),
-        //     spl_token::instruction::AuthorityType::AccountOwner,
-        //     ctx.accounts.payer.key,
-        //     &[&ctx.accounts.payer.key],
-        // )?;
-
-        // msg!("Calling the token program to transfer token account ownership...");
-        // invoke(
-        //     &owner_change_ix,
-        //     &[
-        //         transfer_to_ata_keypair.clone(),
-        //         ctx.accounts.payer.clone(),
-        //         token_program.clone(),
-        //     ],
-        // )?;
-        // msg!("transfer token account ownership success");
-
-
-        // let box_name = box_metadata.data.name;
-        // let indexs: Vec<&str> = box_name.rsplit("#").collect();
-        // let index = indexs[0].to_string();
+        let box_name = box_metadata.data.name;
+        let indexs: Vec<&str> = box_name.rsplit("#").collect();
+        let index = indexs[0].to_string();
         
-        // msg!("index={}", index);
+        msg!("index={}", index);
         
-        // print_type_of(&index);
+        print_type_of(&index);
 
-        // // let data: i32 = FromStr::from_str(&index).unwrap();
-        // // let data: i32 = &index.parse::<i32>().unwrap();
-        // let data: i32 = sum_of_string(&index) as i32;
-        // // let data = index.parse::<u64>().expect("Could not parse as integer");
+        // let data: i32 = FromStr::from_str(&index).unwrap();
+        // let data: i32 = &index.parse::<i32>().unwrap();
+        let data: i32 = sum_of_string(&index) as i32;
+        // let data = index.parse::<u64>().expect("Could not parse as integer");
 
-        // msg!("index: {}", data);
+        msg!("index: {}", data);
        
-        // // step3: check if the box minted
+        // step3: check if the box minted
 
-        // // step4: mint
-        // match candy_machine.data.go_live_date {
-        //     None => {
-        //         if *ctx.accounts.payer.key != candy_machine.authority {
-        //             return Err(ErrorCode::CandyMachineNotLiveYet.into());
-        //         }
-        //     }
-        //     Some(val) => {
-        //         if clock.unix_timestamp < val {
-        //             if *ctx.accounts.payer.key != candy_machine.authority {
-        //                 return Err(ErrorCode::CandyMachineNotLiveYet.into());
-        //             }
-        //         }
-        //     }
-        // }
+        // step4: mint
+        match candy_machine.data.go_live_date {
+            None => {
+                if *ctx.accounts.payer.key != candy_machine.authority {
+                    return Err(ErrorCode::CandyMachineNotLiveYet.into());
+                }
+            }
+            Some(val) => {
+                if clock.unix_timestamp < val {
+                    if *ctx.accounts.payer.key != candy_machine.authority {
+                        return Err(ErrorCode::CandyMachineNotLiveYet.into());
+                    }
+                }
+            }
+        }
 
-        // // if candy_machine.items_redeemed >= candy_machine.data.items_available {
-        // //     return Err(ErrorCode::CandyMachineEmpty.into());
-        // // }
-
-        // if data >= candy_machine.data.items_available as i32 {
+        // if candy_machine.items_redeemed >= candy_machine.data.items_available {
         //     return Err(ErrorCode::CandyMachineEmpty.into());
         // }
 
-        // msg!("mint_nft {}", data);
+        if data >= candy_machine.data.items_available as i32 {
+            return Err(ErrorCode::CandyMachineEmpty.into());
+        }
 
-        // if candy_machine.starbots.contains(&data) { 
-        //     msg!("yes");
-        //     return Err(ErrorCode::MintLootBoxUsed.into());
-        // } else {
-        //     msg!("no");
-        //     candy_machine.starbots.push(data);
-        // }
+        msg!("mint_nft {}", data);
 
-        // if let Some(mint) = candy_machine.token_mint {
-        //     let token_account_info = &ctx.remaining_accounts[0];
-        //     let transfer_authority_info = &ctx.remaining_accounts[1];
-        //     let token_account: Account = assert_initialized(&token_account_info)?;
+        if candy_machine.starbots.contains(&data) { 
+            msg!("yes");
+            return Err(ErrorCode::MintLootBoxUsed.into());
+        } else {
+            msg!("no");
+            candy_machine.starbots.push(data);
+        }
 
-        //     assert_owned_by(&token_account_info, &spl_token::id())?;
+        if let Some(mint) = candy_machine.token_mint {
+            let token_account_info = &ctx.remaining_accounts[0];
+            let transfer_authority_info = &ctx.remaining_accounts[1];
+            let token_account: Account = assert_initialized(&token_account_info)?;
 
-        //     if token_account.mint != mint {
-        //         return Err(ErrorCode::MintMismatch.into());
-        //     }
+            assert_owned_by(&token_account_info, &spl_token::id())?;
 
-        //     if token_account.amount < candy_machine.data.price {
-        //         return Err(ErrorCode::NotEnoughTokens.into());
-        //     }
+            if token_account.mint != mint {
+                return Err(ErrorCode::MintMismatch.into());
+            }
 
-        //     spl_token_transfer(TokenTransferParams {
-        //         source: token_account_info.clone(),
-        //         destination: ctx.accounts.wallet.clone(),
-        //         authority: transfer_authority_info.clone(),
-        //         authority_signer_seeds: &[],
-        //         token_program: ctx.accounts.token_program.clone(),
-        //         amount: candy_machine.data.price,
-        //     })?;
-        // } else {
-        //     if ctx.accounts.payer.lamports() < candy_machine.data.price {
-        //         return Err(ErrorCode::NotEnoughSOL.into());
-        //     }
+            if token_account.amount < candy_machine.data.price {
+                return Err(ErrorCode::NotEnoughTokens.into());
+            }
 
-        //     invoke(
-        //         &system_instruction::transfer(
-        //             &ctx.accounts.payer.key,
-        //             ctx.accounts.wallet.key,
-        //             candy_machine.data.price,
-        //         ),
-        //         &[
-        //             ctx.accounts.payer.clone(),
-        //             ctx.accounts.wallet.clone(),
-        //             ctx.accounts.system_program.clone(),
-        //         ],
-        //     )?;
-        // }
+            spl_token_transfer(TokenTransferParams {
+                source: token_account_info.clone(),
+                destination: ctx.accounts.wallet.clone(),
+                authority: transfer_authority_info.clone(),
+                authority_signer_seeds: &[],
+                token_program: ctx.accounts.token_program.clone(),
+                amount: candy_machine.data.price,
+            })?;
+        } else {
+            if ctx.accounts.payer.lamports() < candy_machine.data.price {
+                return Err(ErrorCode::NotEnoughSOL.into());
+            }
 
-        // let config_line = get_config_line(
-        //     &config.to_account_info(),
-        //     // candy_machine.items_redeemed as usize,
-        //     data as usize,
-        // )?;
+            invoke(
+                &system_instruction::transfer(
+                    &ctx.accounts.payer.key,
+                    ctx.accounts.wallet.key,
+                    candy_machine.data.price,
+                ),
+                &[
+                    ctx.accounts.payer.clone(),
+                    ctx.accounts.wallet.clone(),
+                    ctx.accounts.system_program.clone(),
+                ],
+            )?;
+        }
 
-        // candy_machine.items_redeemed = candy_machine
-        //     .items_redeemed
-        //     .checked_add(1)
-        //     .ok_or(ErrorCode::NumericalOverflowError)?;
+        let config_line = get_config_line(
+            &config.to_account_info(),
+            // candy_machine.items_redeemed as usize,
+            data as usize,
+        )?;
 
-        // let config_key = config.key();
-        // let authority_seeds = [
-        //     PREFIX.as_bytes(),
-        //     config_key.as_ref(),
-        //     candy_machine.data.uuid.as_bytes(),
-        //     &[candy_machine.bump],
-        // ];
+        candy_machine.items_redeemed = candy_machine
+            .items_redeemed
+            .checked_add(1)
+            .ok_or(ErrorCode::NumericalOverflowError)?;
 
-        // let mut creators: Vec<metaplex_token_metadata::state::Creator> =
-        //     vec![metaplex_token_metadata::state::Creator {
-        //         address: candy_machine.key(),
-        //         verified: true,
-        //         share: 0,
-        //     }];
+        let config_key = config.key();
+        let authority_seeds = [
+            PREFIX.as_bytes(),
+            config_key.as_ref(),
+            candy_machine.data.uuid.as_bytes(),
+            &[candy_machine.bump],
+        ];
 
-        // for c in &config.data.creators {
-        //     creators.push(metaplex_token_metadata::state::Creator {
-        //         address: c.address,
-        //         verified: false,
-        //         share: c.share,
-        //     });
-        // }
+        let mut creators: Vec<metaplex_token_metadata::state::Creator> =
+            vec![metaplex_token_metadata::state::Creator {
+                address: candy_machine.key(),
+                verified: true,
+                share: 0,
+            }];
 
-        // let metadata_infos = vec![
-        //     ctx.accounts.metadata.clone(),
-        //     ctx.accounts.mint.clone(),
-        //     ctx.accounts.mint_authority.clone(),
-        //     ctx.accounts.payer.clone(),
-        //     ctx.accounts.token_metadata_program.clone(),
-        //     ctx.accounts.token_program.clone(),
-        //     ctx.accounts.system_program.clone(),
-        //     ctx.accounts.rent.to_account_info().clone(),
-        //     candy_machine.to_account_info().clone(),
-        // ];
+        for c in &config.data.creators {
+            creators.push(metaplex_token_metadata::state::Creator {
+                address: c.address,
+                verified: false,
+                share: c.share,
+            });
+        }
 
-        // let master_edition_infos = vec![
-        //     ctx.accounts.master_edition.clone(),
-        //     ctx.accounts.mint.clone(),
-        //     ctx.accounts.mint_authority.clone(),
-        //     ctx.accounts.payer.clone(),
-        //     ctx.accounts.metadata.clone(),
-        //     ctx.accounts.token_metadata_program.clone(),
-        //     ctx.accounts.token_program.clone(),
-        //     ctx.accounts.system_program.clone(),
-        //     ctx.accounts.rent.to_account_info().clone(),
-        //     candy_machine.to_account_info().clone(),
-        // ];
+        let metadata_infos = vec![
+            ctx.accounts.metadata.clone(),
+            ctx.accounts.mint.clone(),
+            ctx.accounts.mint_authority.clone(),
+            ctx.accounts.payer.clone(),
+            ctx.accounts.token_metadata_program.clone(),
+            ctx.accounts.token_program.clone(),
+            ctx.accounts.system_program.clone(),
+            ctx.accounts.rent.to_account_info().clone(),
+            candy_machine.to_account_info().clone(),
+        ];
 
-        // invoke_signed(
-        //     &create_metadata_accounts(
-        //         *ctx.accounts.token_metadata_program.key,
-        //         *ctx.accounts.metadata.key,
-        //         *ctx.accounts.mint.key,
-        //         *ctx.accounts.mint_authority.key,
-        //         *ctx.accounts.payer.key,
-        //         candy_machine.key(),
-        //         config_line.name,
-        //         config.data.symbol.clone(),
-        //         config_line.uri,
-        //         Some(creators),
-        //         config.data.seller_fee_basis_points,
-        //         true,
-        //         config.data.is_mutable,
-        //     ),
-        //     metadata_infos.as_slice(),
-        //     &[&authority_seeds],
-        // )?;
+        let master_edition_infos = vec![
+            ctx.accounts.master_edition.clone(),
+            ctx.accounts.mint.clone(),
+            ctx.accounts.mint_authority.clone(),
+            ctx.accounts.payer.clone(),
+            ctx.accounts.metadata.clone(),
+            ctx.accounts.token_metadata_program.clone(),
+            ctx.accounts.token_program.clone(),
+            ctx.accounts.system_program.clone(),
+            ctx.accounts.rent.to_account_info().clone(),
+            candy_machine.to_account_info().clone(),
+        ];
 
-        // invoke_signed(
-        //     &create_master_edition(
-        //         *ctx.accounts.token_metadata_program.key,
-        //         *ctx.accounts.master_edition.key,
-        //         *ctx.accounts.mint.key,
-        //         candy_machine.key(),
-        //         *ctx.accounts.mint_authority.key,
-        //         *ctx.accounts.metadata.key,
-        //         *ctx.accounts.payer.key,
-        //         Some(config.data.max_supply),
-        //     ),
-        //     master_edition_infos.as_slice(),
-        //     &[&authority_seeds],
-        // )?;
+        invoke_signed(
+            &create_metadata_accounts(
+                *ctx.accounts.token_metadata_program.key,
+                *ctx.accounts.metadata.key,
+                *ctx.accounts.mint.key,
+                *ctx.accounts.mint_authority.key,
+                *ctx.accounts.payer.key,
+                candy_machine.key(),
+                config_line.name,
+                config.data.symbol.clone(),
+                config_line.uri,
+                Some(creators),
+                config.data.seller_fee_basis_points,
+                true,
+                config.data.is_mutable,
+            ),
+            metadata_infos.as_slice(),
+            &[&authority_seeds],
+        )?;
 
-        // let mut new_update_authority = Some(candy_machine.authority);
+        invoke_signed(
+            &create_master_edition(
+                *ctx.accounts.token_metadata_program.key,
+                *ctx.accounts.master_edition.key,
+                *ctx.accounts.mint.key,
+                candy_machine.key(),
+                *ctx.accounts.mint_authority.key,
+                *ctx.accounts.metadata.key,
+                *ctx.accounts.payer.key,
+                Some(config.data.max_supply),
+            ),
+            master_edition_infos.as_slice(),
+            &[&authority_seeds],
+        )?;
 
-        // if !ctx.accounts.config.data.retain_authority {
-        //     new_update_authority = Some(ctx.accounts.update_authority.key());
-        // }
+        let mut new_update_authority = Some(candy_machine.authority);
 
-        // invoke_signed(
-        //     &update_metadata_accounts(
-        //         *ctx.accounts.token_metadata_program.key,
-        //         *ctx.accounts.metadata.key,
-        //         candy_machine.key(),
-        //         new_update_authority,
-        //         None,
-        //         Some(true),
-        //     ),
-        //     &[
-        //         ctx.accounts.token_metadata_program.clone(),
-        //         ctx.accounts.metadata.clone(),
-        //         candy_machine.to_account_info().clone(),
-        //     ],
-        //     &[&authority_seeds],
-        // )?;
+        if !ctx.accounts.config.data.retain_authority {
+            new_update_authority = Some(ctx.accounts.update_authority.key());
+        }
+
+        invoke_signed(
+            &update_metadata_accounts(
+                *ctx.accounts.token_metadata_program.key,
+                *ctx.accounts.metadata.key,
+                candy_machine.key(),
+                new_update_authority,
+                None,
+                Some(true),
+            ),
+            &[
+                ctx.accounts.token_metadata_program.clone(),
+                ctx.accounts.metadata.clone(),
+                candy_machine.to_account_info().clone(),
+            ],
+            &[&authority_seeds],
+        )?;
 
         Ok(())
     }

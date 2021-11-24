@@ -167,24 +167,12 @@ export async function mint(
   const metadataAddress = await getMetadata(mint.publicKey);
   const masterEdition = await getMasterEdition(mint.publicKey);
 
-  console.log(
-    (await getMetadata(nftTokenAddress)).toString(),
-    'await getMetadata(nftTokenAddress)',
-  );
-
-  console.log(new PublicKey('4yeiCoEjRbChByP7G1EXqgTKf1Q7rvnpPbmDzPm7S7XQ'));
-  console.log(new PublicKey('EB1S6BMWjLTHE6yZAUL5fVUddUxtf663EyqUrr4S7w2Z'));
-
   instructions.push(
     await anchorProgram.instruction.mintNft({
       accounts: {
         // address that store name and uri of asset
-        // config: configAddress, // DONE
-        config: new PublicKey('4yeiCoEjRbChByP7G1EXqgTKf1Q7rvnpPbmDzPm7S7XQ'),
-        // candyMachine: candyMachineAddress,
-        candyMachine: new PublicKey(
-          'EB1S6BMWjLTHE6yZAUL5fVUddUxtf663EyqUrr4S7w2Z',
-        ),
+        config: configAddress, // DONE
+        candyMachine: candyMachineAddress,
 
         payer: userKeyPair.publicKey, // DONE
         //@ts-ignore
