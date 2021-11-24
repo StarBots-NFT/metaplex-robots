@@ -9,6 +9,7 @@ import {
 } from "@solana/web3.js";
 import { CandyMachine, Config } from "./nft-candy-machine-types";
 import transferToken from './transfer-token';
+import findATAToken from './find-ata-token';
 
 // /home/nam/.config/solana/id.json
 // 4TDmqAFCZJ2MBmsAU9DS2XzUcscU5TdNig3SdYpEM8Dy
@@ -19,9 +20,9 @@ const LOOTBOX_HOLDER_WALLET = [230,136,48,159,210,136,242,4,157,112,136,69,21,15
 
 const NFT_LOOTBOX = new PublicKey('4FwT8xRru7NRk4GF2iQmbBmuXwh7QqP6dhSmA23swGKC');
 
-const PRIMARY_WALLET_LOOTBOX_ATA_ADDRESS = new PublicKey('4iDnPGqnGDRs12FN5Sm7R2NTRExdhweajd9LyGd7XqZq');
+let PRIMARY_WALLET_LOOTBOX_ATA_ADDRESS;
 
-const LOOTBOX_HOLDER_WALLET_LOOTBOX_ATA_ADDRESS = new PublicKey('2gtKUUPVGH5GaJL7A9uxqfp5f7cC5u2Ymn5iK4B54WFa');
+let LOOTBOX_HOLDER_WALLET_LOOTBOX_ATA_ADDRESS;
 
 const NFT_LOOTBOX_NOT_ISSUE_BY_US = new PublicKey('7coQY4DvPkWawMemd5X8Tj1M3xHXtP5nD4ZmKhJdMXEa');
 
@@ -315,6 +316,18 @@ describe("nft-candy-machine", function () {
 
   describe("sol only", function () {
     beforeEach(async function () {
+
+      LOOTBOX_HOLDER_WALLET_LOOTBOX_ATA_ADDRESS = await findATAToken({
+        connection,
+        userPublicKey: lootboxHolderWallet.publicKey,
+        nftTokenAddress: NFT_LOOTBOX
+      });
+
+      PRIMARY_WALLET_LOOTBOX_ATA_ADDRESS = await findATAToken({
+        connection,
+        userPublicKey: myWallet.publicKey,
+        nftTokenAddress: NFT_LOOTBOX
+      });
 
 
       const primaryWalletLootboxAtaInfo = await nftLootboxToken.getAccountInfo(PRIMARY_WALLET_LOOTBOX_ATA_ADDRESS);
