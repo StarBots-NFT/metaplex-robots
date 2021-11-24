@@ -1,4 +1,4 @@
-import { ProxyCallAddress } from "./ProxyCallAddress";
+import { ProxyCallAddress } from './ProxyCallAddress';
 
 export class RedeemUnusedWinningConfigItemsAsAuctioneerArgs {
   instruction = 12;

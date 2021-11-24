@@ -1,20 +1,20 @@
-import { SYSVAR_CLOCK_PUBKEY, TransactionInstruction } from "@solana/web3.js";
-import { serialize } from "borsh";
+import { SYSVAR_CLOCK_PUBKEY, TransactionInstruction } from '@solana/web3.js';
+import { serialize } from 'borsh';
 
-import { SCHEMA } from "./schema";
-import { StartAuctionArgs } from "./StartAuctionArgs";
-import { getAuctionKeys } from "./getAuctionKeys";
-import { programIds, StringPublicKey, toPublicKey } from "../../utils";
+import { SCHEMA } from './schema';
+import { StartAuctionArgs } from './StartAuctionArgs';
+import { getAuctionKeys } from './getAuctionKeys';
+import { programIds, StringPublicKey, toPublicKey } from '../../utils';
 
 export async function startAuction(
   vault: StringPublicKey,
   auctionManagerAuthority: StringPublicKey,
-  instructions: TransactionInstruction[]
+  instructions: TransactionInstruction[],
 ) {
   const PROGRAM_IDS = programIds();
   const store = PROGRAM_IDS.store;
   if (!store) {
-    throw new Error("Store not initialized");
+    throw new Error('Store not initialized');
   }
 
   const { auctionKey, auctionManagerKey } = await getAuctionKeys(vault);
@@ -61,6 +61,6 @@ export async function startAuction(
       keys,
       programId: toPublicKey(PROGRAM_IDS.metaplex),
       data,
-    })
+    }),
   );
 }

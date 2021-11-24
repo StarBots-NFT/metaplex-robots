@@ -1,4 +1,4 @@
-import { JsonProperty, Serializable } from "typescript-json-serializer";
+import { JsonProperty, Serializable } from 'typescript-json-serializer';
 @Serializable()
 export class WinningConfigStateItem {
   @JsonProperty()

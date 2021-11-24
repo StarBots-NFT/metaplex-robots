@@ -1,4 +1,4 @@
-import { AuctionManagerSettingsV1 } from "./entities";
+import { AuctionManagerSettingsV1 } from './entities';
 
 export class DeprecatedInitAuctionManagerV1Args {
   instruction = 0;

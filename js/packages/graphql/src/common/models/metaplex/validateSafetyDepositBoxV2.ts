@@ -2,17 +2,17 @@ import {
   SystemProgram,
   SYSVAR_RENT_PUBKEY,
   TransactionInstruction,
-} from "@solana/web3.js";
-import { serialize } from "borsh";
+} from '@solana/web3.js';
+import { serialize } from 'borsh';
 
-import { getSafetyDepositConfig } from "./getSafetyDepositConfig";
-import { getOriginalAuthority } from "./getOriginalAuthority";
-import { SCHEMA } from "./schema";
-import { ValidateSafetyDepositBoxV2Args } from "./ValidateSafetyDepositBoxV2Args";
-import { getAuctionWinnerTokenTypeTracker } from "./getAuctionWinnerTokenTypeTracker";
-import { getAuctionKeys } from "./getAuctionKeys";
-import { SafetyDepositConfig } from "./entities/SafetyDepositConfig";
-import { programIds, toPublicKey, StringPublicKey } from "../../utils";
+import { getSafetyDepositConfig } from './getSafetyDepositConfig';
+import { getOriginalAuthority } from './getOriginalAuthority';
+import { SCHEMA } from './schema';
+import { ValidateSafetyDepositBoxV2Args } from './ValidateSafetyDepositBoxV2Args';
+import { getAuctionWinnerTokenTypeTracker } from './getAuctionWinnerTokenTypeTracker';
+import { getAuctionKeys } from './getAuctionKeys';
+import { SafetyDepositConfig } from './entities/SafetyDepositConfig';
+import { programIds, toPublicKey, StringPublicKey } from '../../utils';
 
 export async function validateSafetyDepositBoxV2(
   vault: StringPublicKey,
@@ -27,7 +27,7 @@ export async function validateSafetyDepositBoxV2(
   edition: StringPublicKey,
   whitelistedCreator: StringPublicKey | undefined,
   store: StringPublicKey,
-  safetyDepositConfig: SafetyDepositConfig
+  safetyDepositConfig: SafetyDepositConfig,
 ) {
   const PROGRAM_IDS = programIds();
 
@@ -35,16 +35,16 @@ export async function validateSafetyDepositBoxV2(
 
   const originalAuthorityLookup = await getOriginalAuthority(
     auctionKey,
-    metadata
+    metadata,
   );
 
   const safetyDepositConfigKey = await getSafetyDepositConfig(
     auctionManagerKey,
-    safetyDepositBox
+    safetyDepositBox,
   );
 
   const tokenTracker = await getAuctionWinnerTokenTypeTracker(
-    auctionManagerKey
+    auctionManagerKey,
   );
 
   const value = new ValidateSafetyDepositBoxV2Args(safetyDepositConfig);
@@ -149,6 +149,6 @@ export async function validateSafetyDepositBoxV2(
       keys,
       programId: toPublicKey(PROGRAM_IDS.metaplex),
       data,
-    })
+    }),
   );
 }

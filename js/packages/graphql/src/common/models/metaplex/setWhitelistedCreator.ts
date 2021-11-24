@@ -1,22 +1,22 @@
-import { SYSVAR_RENT_PUBKEY, TransactionInstruction } from "@solana/web3.js";
-import { serialize } from "borsh";
+import { SYSVAR_RENT_PUBKEY, TransactionInstruction } from '@solana/web3.js';
+import { serialize } from 'borsh';
 
-import { getWhitelistedCreator } from "./getWhitelistedCreator";
-import { SCHEMA } from "./schema";
-import { SetWhitelistedCreatorArgs } from "./SetWhitelistedCreatorArgs";
-import { programIds, StringPublicKey, toPublicKey } from "../../utils";
+import { getWhitelistedCreator } from './getWhitelistedCreator';
+import { SCHEMA } from './schema';
+import { SetWhitelistedCreatorArgs } from './SetWhitelistedCreatorArgs';
+import { programIds, StringPublicKey, toPublicKey } from '../../utils';
 
 export async function setWhitelistedCreator(
   creator: StringPublicKey,
   activated: boolean,
   admin: StringPublicKey,
   payer: StringPublicKey,
-  instructions: TransactionInstruction[]
+  instructions: TransactionInstruction[],
 ) {
   const { store, system, metaplex } = programIds();
 
   if (!store) {
-    throw new Error("Store not initialized");
+    throw new Error('Store not initialized');
   }
 
   const whitelistedCreatorPDAKey = await getWhitelistedCreator(creator);
@@ -67,6 +67,6 @@ export async function setWhitelistedCreator(
       keys,
       programId: toPublicKey(metaplex),
       data,
-    })
+    }),
   );
 }

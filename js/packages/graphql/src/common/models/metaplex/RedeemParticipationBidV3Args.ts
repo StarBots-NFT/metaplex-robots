@@ -1,4 +1,4 @@
-import BN from "bn.js";
+import BN from 'bn.js';
 
 export class RedeemParticipationBidV3Args {
   instruction = 19;

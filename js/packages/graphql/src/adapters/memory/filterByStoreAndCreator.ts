@@ -1,5 +1,5 @@
-import { Metadata, WhitelistedCreator } from "../../common";
-import { NexusGenInputs } from "../../generated/typings";
+import { Metadata, WhitelistedCreator } from '../../common';
+import { NexusGenInputs } from '../../generated/typings';
 
 export function filterByStoreAndCreator(
   {
@@ -7,10 +7,10 @@ export function filterByStoreAndCreator(
     creatorId,
     onlyVerified,
   }: Pick<
-    NexusGenInputs["ArtworksInput"],
-    "storeId" | "creatorId" | "onlyVerified"
+    NexusGenInputs['ArtworksInput'],
+    'storeId' | 'creatorId' | 'onlyVerified'
   >,
-  storeCreators: WhitelistedCreator[]
+  storeCreators: WhitelistedCreator[],
 ) {
   const creator =
     (creatorId && storeCreators.find(({ address }) => address === creatorId)) ||
@@ -19,7 +19,7 @@ export function filterByStoreAndCreator(
   return ({ data }: Metadata) => {
     return data.creators?.some(({ address, verified }) => {
       const inStore = storeCreators.some(
-        (creator) => creator.address === address
+        creator => creator.address === address,
       );
       const fromCreator = creator && address === creator.address;
 

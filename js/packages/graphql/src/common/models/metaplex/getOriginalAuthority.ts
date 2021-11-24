@@ -1,9 +1,9 @@
-import { findProgramAddress, programIds, toPublicKey } from "../../utils";
-import { METAPLEX_PREFIX } from "./constants";
+import { findProgramAddress, programIds, toPublicKey } from '../../utils';
+import { METAPLEX_PREFIX } from './constants';
 
 export async function getOriginalAuthority(
   auctionKey: string,
-  metadata: string
+  metadata: string,
 ): Promise<string> {
   const PROGRAM_IDS = programIds();
 
@@ -14,7 +14,7 @@ export async function getOriginalAuthority(
         toPublicKey(auctionKey).toBuffer(),
         toPublicKey(metadata).toBuffer(),
       ],
-      toPublicKey(PROGRAM_IDS.metaplex)
+      toPublicKey(PROGRAM_IDS.metaplex),
     )
   )[0];
 }

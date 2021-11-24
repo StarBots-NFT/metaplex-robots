@@ -1,5 +1,5 @@
-import { findProgramAddress, programIds, toPublicKey } from "../../utils";
-import { METAPLEX_PREFIX } from "./constants";
+import { findProgramAddress, programIds, toPublicKey } from '../../utils';
+import { METAPLEX_PREFIX } from './constants';
 
 export async function getPayoutTicket(
   auctionManager: string,
@@ -7,7 +7,7 @@ export async function getPayoutTicket(
   winnerConfigItemIndex: number | null | undefined,
   creatorIndex: number | null | undefined,
   safetyDepositBox: string,
-  recipient: string
+  recipient: string,
 ) {
   const PROGRAM_IDS = programIds();
 
@@ -19,22 +19,22 @@ export async function getPayoutTicket(
         Buffer.from(
           winnerConfigIndex !== null && winnerConfigIndex !== undefined
             ? winnerConfigIndex.toString()
-            : "participation"
+            : 'participation',
         ),
         Buffer.from(
           winnerConfigItemIndex !== null && winnerConfigItemIndex !== undefined
             ? winnerConfigItemIndex.toString()
-            : "0"
+            : '0',
         ),
         Buffer.from(
           creatorIndex !== null && creatorIndex !== undefined
             ? creatorIndex.toString()
-            : "auctioneer"
+            : 'auctioneer',
         ),
         toPublicKey(safetyDepositBox).toBuffer(),
         toPublicKey(recipient).toBuffer(),
       ],
-      toPublicKey(PROGRAM_IDS.metaplex)
+      toPublicKey(PROGRAM_IDS.metaplex),
     )
   )[0];
 }

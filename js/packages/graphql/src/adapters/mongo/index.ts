@@ -1,3 +1,3 @@
-export * from "./MongoWriter";
-export * from "./MongoReader";
-export * from "./MongoAdapter";
+export * from './MongoWriter';
+export * from './MongoReader';
+export * from './MongoAdapter';

@@ -1,15 +1,13 @@
 import * as anchor from '@project-serum/anchor';
 import { Token, AccountLayout } from '@solana/spl-token';
-import {
-  TOKEN_PROGRAM_ID,
-} from './constants';
+import { TOKEN_PROGRAM_ID } from './constants';
 
 export type TransferTokenType = {
-  connection: anchor.web3.Connection,
-  userPublicKey: anchor.web3.PublicKey,
-  newAtaTokenAdressPublicKey: anchor.web3.PublicKey,
-  nftTokenAddress: anchor.web3.PublicKey,
-  transferFromATA: anchor.web3.PublicKey,
+  connection: anchor.web3.Connection;
+  userPublicKey: anchor.web3.PublicKey;
+  newAtaTokenAdressPublicKey: anchor.web3.PublicKey;
+  nftTokenAddress: anchor.web3.PublicKey;
+  transferFromATA: anchor.web3.PublicKey;
 };
 
 export default async function transferToken({
@@ -17,15 +15,14 @@ export default async function transferToken({
   userPublicKey,
   newAtaTokenAdressPublicKey,
   nftTokenAddress,
-  transferFromATA
+  transferFromATA,
 }: TransferTokenType) {
-
   // https://explorer.solana.com/address/HJdiGaCEa7gg7dyNqkxWWkaGvDNxTHEzGkcCqDophJM7?cluster=devnet
   const createTempTokenAccountIx = anchor.web3.SystemProgram.createAccount({
     programId: TOKEN_PROGRAM_ID,
     space: AccountLayout.span,
     lamports: await connection.getMinimumBalanceForRentExemption(
-      AccountLayout.span
+      AccountLayout.span,
     ),
     fromPubkey: userPublicKey,
     newAccountPubkey: newAtaTokenAdressPublicKey,
@@ -44,7 +41,7 @@ export default async function transferToken({
     newAtaTokenAdressPublicKey,
     userPublicKey,
     [],
-    1
+    1,
   );
 
   return [
@@ -52,4 +49,4 @@ export default async function transferToken({
     initTempAccountIx,
     transferXTokensToTempAccIx,
   ];
-};
+}

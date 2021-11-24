@@ -1,9 +1,9 @@
-import { findProgramAddress, programIds, toPublicKey } from "../../utils";
-import { METAPLEX_PREFIX } from "./constants";
+import { findProgramAddress, programIds, toPublicKey } from '../../utils';
+import { METAPLEX_PREFIX } from './constants';
 
 export async function getBidRedemption(
   auctionKey: string,
-  bidMetadata: string
+  bidMetadata: string,
 ): Promise<string> {
   const PROGRAM_IDS = programIds();
 
@@ -14,7 +14,7 @@ export async function getBidRedemption(
         toPublicKey(auctionKey).toBuffer(),
         toPublicKey(bidMetadata).toBuffer(),
       ],
-      toPublicKey(PROGRAM_IDS.metaplex)
+      toPublicKey(PROGRAM_IDS.metaplex),
     )
   )[0];
 }
