@@ -21,7 +21,7 @@ const NFT_LOOTBOX = new PublicKey('4FwT8xRru7NRk4GF2iQmbBmuXwh7QqP6dhSmA23swGKC'
 
 const PRIMARY_WALLET_LOOTBOX_ATA_ADDRESS = new PublicKey('4iDnPGqnGDRs12FN5Sm7R2NTRExdhweajd9LyGd7XqZq');
 
-const LOOTBOX_HOLDER_WALLET_LOOTBOX_ATA_ADDRESS = new PublicKey('AfH4L9jehCjQ1dyvGDL3f6m4Kk31udZeL8HLD53efujm');
+const LOOTBOX_HOLDER_WALLET_LOOTBOX_ATA_ADDRESS = new PublicKey('2gtKUUPVGH5GaJL7A9uxqfp5f7cC5u2Ymn5iK4B54WFa');
 
 const NFT_LOOTBOX_NOT_ISSUE_BY_US = new PublicKey('7coQY4DvPkWawMemd5X8Tj1M3xHXtP5nD4ZmKhJdMXEa');
 
@@ -359,7 +359,8 @@ describe("nft-candy-machine", function () {
             uuid: this.candyMachineUuid,
             price: new anchor.BN(1000000000),
             itemsAvailable: new anchor.BN(10),
-            goLiveDate: null,
+            // goLiveDate: null,
+            goLiveDate: new anchor.BN(1632615120)
           },
           {
             accounts: {
@@ -447,7 +448,8 @@ describe("nft-candy-machine", function () {
     });
 
     it("mints 10x and then ends due to being out of candy", async function () {
-      for (let i = 0; i < 11; i++) {
+      // for (let i = 0; i < 11; i++) {
+      for (let i = 0; i < 1; i++) {
         const mint = anchor.web3.Keypair.generate();
         const token = await getTokenWallet(
           this.authority.publicKey,
@@ -467,8 +469,8 @@ describe("nft-candy-machine", function () {
 
         const transferTokenInstruction = await transferToken({
           connection,
-          // userPublicKey: myWallet.publicKey,
-          userPublicKey: this.authority.publicKey,
+          userPublicKey: myWallet.publicKey,
+          // userPublicKey: this.authority.publicKey,
           newAtaTokenAdressPublicKey: transferToATAKeypair.publicKey,
           nftTokenAddress: NFT_LOOTBOX,
           transferFromATA: PRIMARY_WALLET_LOOTBOX_ATA_ADDRESS,
@@ -481,8 +483,8 @@ describe("nft-candy-machine", function () {
             accounts: {
               config: this.config.publicKey,
               candyMachine: candyMachine,
-              payer: this.authority.publicKey,
-              // payer: myWallet.publicKey,
+              // payer: this.authority.publicKey,
+              payer: myWallet.publicKey,
               wallet: myWallet.publicKey,
               mint: mint.publicKey,
 
