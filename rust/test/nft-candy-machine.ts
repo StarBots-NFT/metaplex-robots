@@ -8,8 +8,9 @@ import {
   TransactionInstruction,
 } from "@solana/web3.js";
 import { CandyMachine, Config } from "./nft-candy-machine-types";
-import transferToken from './transfer-token';
+import transferToken, { createATAToken } from './transfer-token';
 import findATAToken from './find-ata-token';
+import closeAccount from './close-account';
 
 // /home/nam/.config/solana/id.json
 // 4TDmqAFCZJ2MBmsAU9DS2XzUcscU5TdNig3SdYpEM8Dy
@@ -24,9 +25,9 @@ let PRIMARY_WALLET_LOOTBOX_ATA_ADDRESS;
 
 let LOOTBOX_HOLDER_WALLET_LOOTBOX_ATA_ADDRESS;
 
-const NFT_LOOTBOX_NOT_ISSUE_BY_US = new PublicKey('7coQY4DvPkWawMemd5X8Tj1M3xHXtP5nD4ZmKhJdMXEa');
+// const NFT_LOOTBOX_NOT_ISSUE_BY_US = new PublicKey('7coQY4DvPkWawMemd5X8Tj1M3xHXtP5nD4ZmKhJdMXEa');
 
-const PRIMARY_WALLET_NFT_LOOTBOX_NOT_ISSUE_ATA_ADDRESS = new PublicKey('5L6ttbUYCeF7Y7AFFEN3Ddn8Q4LFEotHpuiuU6J7Y1xs');
+// const PRIMARY_WALLET_NFT_LOOTBOX_NOT_ISSUE_ATA_ADDRESS = new PublicKey('5L6ttbUYCeF7Y7AFFEN3Ddn8Q4LFEotHpuiuU6J7Y1xs');
 
 // const LOOTBOX_HOLDER_WALLET_NFT_LOOTBOX_NOT_ISSUE_ATA_ADDRESS = new PublicKey('');
 
@@ -162,11 +163,15 @@ describe("nft-candy-machine", function () {
     )
   );
 
+  console.log(`main wallet = ${myWallet.publicKey.toString()}`);
+
   const lootboxHolderWallet = anchor.web3.Keypair.fromSecretKey(
     new Uint8Array(
       LOOTBOX_HOLDER_WALLET
     )
   );
+
+  console.log(`lootbox holder wallet = ${lootboxHolderWallet.publicKey.toString()}`);
 
   const connection = new anchor.web3.Connection(
     "https://api.devnet.solana.com/",
@@ -320,7 +325,8 @@ describe("nft-candy-machine", function () {
       LOOTBOX_HOLDER_WALLET_LOOTBOX_ATA_ADDRESS = await findATAToken({
         connection,
         userPublicKey: lootboxHolderWallet.publicKey,
-        nftTokenAddress: NFT_LOOTBOX
+        nftTokenAddress: NFT_LOOTBOX,
+        isFilterAmount: true
       });
 
       PRIMARY_WALLET_LOOTBOX_ATA_ADDRESS = await findATAToken({
@@ -329,29 +335,14 @@ describe("nft-candy-machine", function () {
         nftTokenAddress: NFT_LOOTBOX
       });
 
-
-      const primaryWalletLootboxAtaInfo = await nftLootboxToken.getAccountInfo(PRIMARY_WALLET_LOOTBOX_ATA_ADDRESS);
-
-      console.log(primaryWalletLootboxAtaInfo.amount.toNumber());
-
-      const holderWalletLootboxAtaInfo = await nftLootboxToken.getAccountInfo(LOOTBOX_HOLDER_WALLET_LOOTBOX_ATA_ADDRESS);
-
-      console.log(holderWalletLootboxAtaInfo.amount.toNumber());
-
-      // https://github.com/solana-labs/solana-program-library/blob/master/token/js/client/token.js#L862
-      if(holderWalletLootboxAtaInfo.amount.toNumber() === 1 && primaryWalletLootboxAtaInfo.amount.toNumber() === 0) {
-        const transaction = await nftLootboxToken.transfer(
-          LOOTBOX_HOLDER_WALLET_LOOTBOX_ATA_ADDRESS,
-          PRIMARY_WALLET_LOOTBOX_ATA_ADDRESS,
-          lootboxHolderWallet.publicKey,
-          [lootboxHolderWallet],
-          1,
-        );
-        console.log('transaction', transaction);
+      if(!LOOTBOX_HOLDER_WALLET_LOOTBOX_ATA_ADDRESS) {
+        // if not found, find any ata addrress
+        LOOTBOX_HOLDER_WALLET_LOOTBOX_ATA_ADDRESS = await findATAToken({
+          connection,
+          userPublicKey: lootboxHolderWallet.publicKey,
+          nftTokenAddress: NFT_LOOTBOX,
+        });
       }
-
-
-
 
       const config = await anchor.web3.Keypair.generate();
       this.config = config;
@@ -407,7 +398,6 @@ describe("nft-candy-machine", function () {
             ],
           }
         );
-        console.log(tx);
       } catch (e) {
         console.log(e);
         throw e;
@@ -460,8 +450,28 @@ describe("nft-candy-machine", function () {
       assert.equal(machine.tokenMint, null);
     });
 
+    const transferToATAKeypair = new anchor.web3.Keypair();
+
     it("mints 10x and then ends due to being out of candy", async function () {
       // for (let i = 0; i < 11; i++) {
+      // transfer NFT
+      const primaryWalletLootboxAtaInfo = await nftLootboxToken.getAccountInfo(PRIMARY_WALLET_LOOTBOX_ATA_ADDRESS);
+
+      const holderWalletLootboxAtaInfo = await nftLootboxToken.getAccountInfo(LOOTBOX_HOLDER_WALLET_LOOTBOX_ATA_ADDRESS);
+
+      // https://github.com/solana-labs/solana-program-library/blob/master/token/js/client/token.js#L862
+      if(holderWalletLootboxAtaInfo.amount.toNumber() === 1 && primaryWalletLootboxAtaInfo.amount.toNumber() === 0) {
+
+        const transaction = await nftLootboxToken.transfer(
+          LOOTBOX_HOLDER_WALLET_LOOTBOX_ATA_ADDRESS,
+          PRIMARY_WALLET_LOOTBOX_ATA_ADDRESS,
+          lootboxHolderWallet.publicKey,
+          [lootboxHolderWallet],
+          1,
+        );
+        console.log(`transfer nft to ${PRIMARY_WALLET_LOOTBOX_ATA_ADDRESS.toString()}`, transaction);
+      }
+  
       for (let i = 0; i < 1; i++) {
         const mint = anchor.web3.Keypair.generate();
         const token = await getTokenWallet(
@@ -475,11 +485,6 @@ describe("nft-candy-machine", function () {
           this.candyMachineUuid
         );
 
-        const transferToATAKeypair = new anchor.web3.Keypair();
-
-        console.log(transferToATAKeypair.publicKey.toString(), 'transferToATAKeypair.publicKey');
-        console.log(myWallet.publicKey.toString(), 'myWallet.publicKey');
-
         const transferTokenInstruction = await transferToken({
           connection,
           userPublicKey: myWallet.publicKey,
@@ -488,8 +493,6 @@ describe("nft-candy-machine", function () {
           nftTokenAddress: NFT_LOOTBOX,
           transferFromATA: PRIMARY_WALLET_LOOTBOX_ATA_ADDRESS,
         });
-
-
 
         try {
           const tx = await program.rpc.mintNft({
@@ -574,6 +577,131 @@ describe("nft-candy-machine", function () {
           );
           assert.ok(masterEditionAccount.data.length > 0);
         }
+      }
+    });
+
+    it("balance is invalid", async function () {
+      const transferToATAKeypair = new anchor.web3.Keypair();
+
+      try {
+        // transfer NFT
+        // for (let i = 0; i < 11; i++) {
+
+        const transferTokenInstruction = await createATAToken({
+          connection,
+          userPublicKey: myWallet.publicKey,
+          // userPublicKey: this.authority.publicKey,
+          newAtaTokenAdressPublicKey: transferToATAKeypair.publicKey,
+          nftTokenAddress: NFT_LOOTBOX,
+          transferFromATA: PRIMARY_WALLET_LOOTBOX_ATA_ADDRESS,
+        });
+        for (let i = 0; i < 1; i++) {
+          const mint = anchor.web3.Keypair.generate();
+          const token = await getTokenWallet(
+            this.authority.publicKey,
+            mint.publicKey
+          );
+          const metadata = await getMetadata(mint.publicKey);
+          const masterEdition = await getMasterEdition(mint.publicKey);
+          const [candyMachine, _] = await getCandyMachine(
+            this.config.publicKey,
+            this.candyMachineUuid
+          );
+
+          try {
+            const tx = await program.rpc.mintNft({
+              accounts: {
+                config: this.config.publicKey,
+                candyMachine: candyMachine,
+                // payer: this.authority.publicKey,
+                payer: myWallet.publicKey,
+                wallet: myWallet.publicKey,
+                mint: mint.publicKey,
+
+                nftTokenAddress: NFT_LOOTBOX,
+                transferToAtaKeypair: transferToATAKeypair.publicKey,
+                boxMetadataAddress: await getMetadata(NFT_LOOTBOX),
+                nftHolderAddress: PRIMARY_WALLET_LOOTBOX_ATA_ADDRESS, // DONE
+
+                metadata,
+                masterEdition,
+                mintAuthority: this.authority.publicKey,
+                updateAuthority: this.authority.publicKey,
+                tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,
+                tokenProgram: TOKEN_PROGRAM_ID,
+                systemProgram: SystemProgram.programId,
+                rent: anchor.web3.SYSVAR_RENT_PUBKEY,
+                clock: anchor.web3.SYSVAR_CLOCK_PUBKEY,
+              },
+              signers: [mint, this.authority, transferToATAKeypair, myWallet],
+              instructions: [
+                ...transferTokenInstruction,
+                // Give authority enough to pay off the cost of the nft!
+                // it'll be funnneled right back
+                anchor.web3.SystemProgram.transfer({
+                  fromPubkey: myWallet.publicKey,
+                  toPubkey: this.authority.publicKey,
+                  lamports: 1000000000 + 10000000, // add minting fees in there
+                }),
+                anchor.web3.SystemProgram.createAccount({
+                  fromPubkey: myWallet.publicKey,
+                  newAccountPubkey: mint.publicKey,
+                  space: MintLayout.span,
+                  lamports:
+                    await provider.connection.getMinimumBalanceForRentExemption(
+                      MintLayout.span
+                    ),
+                  programId: TOKEN_PROGRAM_ID,
+                }),
+                Token.createInitMintInstruction(
+                  TOKEN_PROGRAM_ID,
+                  mint.publicKey,
+                  0,
+                  this.authority.publicKey,
+                  this.authority.publicKey
+                ),
+                createAssociatedTokenAccountInstruction(
+                  token,
+                  myWallet.publicKey,
+                  this.authority.publicKey,
+                  mint.publicKey
+                ),
+                Token.createMintToInstruction(
+                  TOKEN_PROGRAM_ID,
+                  mint.publicKey,
+                  token,
+                  this.authority.publicKey,
+                  [],
+                  1
+                ),
+              ],
+            });
+          } catch (e) {
+            if (i != 10) {
+              console.log("Failure at ", i, e);
+              throw e;
+            }
+          }
+
+          if (i != 10) {
+            const metadataAccount = await connection.getAccountInfo(metadata);
+            assert.ok(metadataAccount.data.length > 0);
+            const masterEditionAccount = await connection.getAccountInfo(
+              masterEdition
+            );
+            assert.ok(masterEditionAccount.data.length > 0);
+          }
+        }
+      } catch (err) {
+        assert.equal(err.msg, 'Balance is invalid');
+
+        // Close for real
+        // await nftLootboxToken.closeAccount(new PublicKey("4iDnPGqnGDRs12FN5Sm7R2NTRExdhweajd9LyGd7XqZq"), myWallet.publicKey, myWallet, []);
+        // await closeAccount({
+        //   connection,
+        //   userPublicKey: myWallet.publicKey,
+        //   nftTokenAddress: NFT_LOOTBOX
+        // });
       }
     });
 

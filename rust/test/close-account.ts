@@ -9,14 +9,11 @@ export type FindingATAToken = {
     isFilterAmount?: boolean;
 };
 
-export default async function findATAToken({
+export default async function closeAccount({
     connection,
     userPublicKey,
     nftTokenAddress,
-    isFilterAmount = false
 }: FindingATAToken) {
-    let transferFromATA: null | anchor.web3.PublicKey = null;
-
     const { value } = await connection.getParsedTokenAccountsByOwner(
         userPublicKey,
         {
@@ -28,19 +25,8 @@ export default async function findATAToken({
         const tokenAta = get(value[i], 'pubkey');
         const data = get(value[i], 'account.data.parsed');
         const mint = get(data, 'info.mint');
-        if (
-            nftTokenAddress.toBase58() === mint
-        ) {
-            if(!isFilterAmount || (isFilterAmount && parseInt(get(data, 'info.tokenAmount.amount')) > 0))
-                transferFromATA = new anchor.web3.PublicKey(tokenAta);
+        if (nftTokenAddress.toBase58() === mint && parseInt(get(data, 'info.tokenAmount.amount')) === 0) {
+            console.log(new anchor.web3.PublicKey(tokenAta));
         }
     }
-  
-    // if (!transferFromATA) {
-    //   throw new Error(
-    //     `Not found associated token account for ${userPublicKey.toBase58()} ${nftTokenAddress.toBase58()}`,
-    //   );
-    // }
-    
-    return transferFromATA;
 }
