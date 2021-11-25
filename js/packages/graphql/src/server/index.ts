@@ -1,1 +1,1 @@
-export * from "./startApolloServer";
+export * from './startApolloServer';

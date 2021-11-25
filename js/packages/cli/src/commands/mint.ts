@@ -26,7 +26,6 @@ export async function mint(
   configAddress: PublicKey,
   rpcUrl: string,
 ): Promise<string> {
-
   let transferFromATA: null | anchor.web3.PublicKey = null;
 
   let amount: number = 0;
@@ -49,27 +48,34 @@ export async function mint(
   const { value } = await connection.getParsedTokenAccountsByOwner(
     userKeyPair.publicKey,
     {
-      programId: TOKEN_PROGRAM_ID
-    }
+      programId: TOKEN_PROGRAM_ID,
+    },
   );
 
-  for(let i = 0; i < value.length; i += 1) {
+  for (let i = 0; i < value.length; i += 1) {
     const tokenAta = get(value[i], 'pubkey');
     const data = get(value[i], 'account.data.parsed');
     const mint = get(data, 'info.mint');
-  
-    if(nftTokenAddress.toBase58() === mint) {
+
+    if (
+      nftTokenAddress.toBase58() === mint &&
+      parseInt(get(data, 'info.tokenAmount.amount')) > 0
+    ) {
       transferFromATA = new anchor.web3.PublicKey(tokenAta);
       amount = parseInt(get(data, 'info.tokenAmount.amount'));
     }
   }
 
-  if(!transferFromATA) {
-    throw new Error(`Not found associated token account for ${nftTokenAddress.toBase58()}`);
+  if (!transferFromATA) {
+    throw new Error(
+      `Not found associated token account for ${nftTokenAddress.toBase58()}`,
+    );
   }
 
-  if(amount === 0) {
-    throw new Error(`Amount should be greater than zero for ${nftTokenAddress.toBase58()}`);
+  if (amount === 0) {
+    throw new Error(
+      `Amount should be greater than zero for ${nftTokenAddress.toBase58()}`,
+    );
   }
 
   const transferTokenInstruction = await transferToken({
@@ -77,7 +83,7 @@ export async function mint(
     userPublicKey: userKeyPair.publicKey,
     newAtaTokenAdressPublicKey: transferToATAKeypair.publicKey,
     nftTokenAddress,
-    transferFromATA
+    transferFromATA,
   });
 
   const uuid = uuidFromConfigPubkey(configAddress);
@@ -164,26 +170,51 @@ export async function mint(
   instructions.push(
     await anchorProgram.instruction.mintNft({
       accounts: {
-        config: configAddress,
+        // address that store name and uri of asset
+        config: configAddress, // DONE
         candyMachine: candyMachineAddress,
-        payer: userKeyPair.publicKey,
+
+        payer: userKeyPair.publicKey, // DONE
         //@ts-ignore
         wallet: candyMachine.wallet,
-        mint: mint.publicKey,
-        metadata: metadataAddress,
-        masterEdition,
+        mint: mint.publicKey, // DONE
+        metadata: metadataAddress, // DONE
+        masterEdition, // DONE
 
-        transferToAtaKeypair: transferToATAKeypair.publicKey,
-        nftHolderAddress: transferFromATA,
-        boxMetadataAddress: await getMetadata(nftTokenAddress),
+        // temp account that hold use's nft balance
+        transferToAtaKeypair: transferToATAKeypair.publicKey, // DONE
 
-        mintAuthority: userKeyPair.publicKey,
-        updateAuthority: userKeyPair.publicKey,
-        tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,
-        tokenProgram: TOKEN_PROGRAM_ID,
-        systemProgram: SystemProgram.programId,
-        rent: anchor.web3.SYSVAR_RENT_PUBKEY,
-        clock: anchor.web3.SYSVAR_CLOCK_PUBKEY,
+        // ATA of address user NFT
+        nftHolderAddress: transferFromATA, // DONE
+
+        // metadata address for NFT
+        boxMetadataAddress: await getMetadata(nftTokenAddress), // DONE
+
+        // nft address
+        nftTokenAddress, // DONE
+
+        mintAuthority: userKeyPair.publicKey, // done
+        updateAuthority: userKeyPair.publicKey, // done
+
+        // token meta program id
+        // FIXME: should we move this in rust code?
+        tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID, // DONE
+
+        // token program id
+        // FIXME: should we move this in rust code?
+        tokenProgram: TOKEN_PROGRAM_ID, // DONE
+
+        // system program id
+        // FIXME: should we move this in rust code?
+        systemProgram: SystemProgram.programId, // DONE
+
+        // rent program id
+        // FIXME: should we move this in rust code?
+        rent: anchor.web3.SYSVAR_RENT_PUBKEY, // DONE
+
+        // check go_live_date for when user mints nft
+        // FIXME: should we move this in rust code?
+        clock: anchor.web3.SYSVAR_CLOCK_PUBKEY, // DONE
       },
       remainingAccounts,
     }),

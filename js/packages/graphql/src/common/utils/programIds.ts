@@ -1,4 +1,4 @@
-import { findProgramAddress } from "../utils";
+import { findProgramAddress } from '../utils';
 
 import {
   METADATA_PROGRAM_ID,
@@ -11,7 +11,7 @@ import {
   VAULT_ID,
   AUCTION_ID,
   toPublicKey,
-} from "./ids";
+} from './ids';
 
 export const getStoreID = async (storeOwnerAddress?: string) => {
   if (!storeOwnerAddress) {
@@ -20,11 +20,11 @@ export const getStoreID = async (storeOwnerAddress?: string) => {
 
   const programs = await findProgramAddress(
     [
-      Buffer.from("metaplex"),
+      Buffer.from('metaplex'),
       toPublicKey(METAPLEX_ID).toBuffer(),
       toPublicKey(storeOwnerAddress).toBuffer(),
     ],
-    toPublicKey(METAPLEX_ID)
+    toPublicKey(METAPLEX_ID),
   );
   const storeAddress = programs[0];
 

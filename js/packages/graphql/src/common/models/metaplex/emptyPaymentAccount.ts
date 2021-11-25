@@ -2,15 +2,15 @@ import {
   SystemProgram,
   SYSVAR_RENT_PUBKEY,
   TransactionInstruction,
-} from "@solana/web3.js";
-import { serialize } from "borsh";
+} from '@solana/web3.js';
+import { serialize } from 'borsh';
 
-import { getPayoutTicket } from "./getPayoutTicket";
-import { getSafetyDepositConfig } from "./getSafetyDepositConfig";
-import { EmptyPaymentAccountArgs } from "./EmptyPaymentAccountArgs";
-import { getAuctionWinnerTokenTypeTracker } from "./getAuctionWinnerTokenTypeTracker";
-import { programIds, StringPublicKey, toPublicKey } from "../../utils";
-import { SCHEMA } from "./schema";
+import { getPayoutTicket } from './getPayoutTicket';
+import { getSafetyDepositConfig } from './getSafetyDepositConfig';
+import { EmptyPaymentAccountArgs } from './EmptyPaymentAccountArgs';
+import { getAuctionWinnerTokenTypeTracker } from './getAuctionWinnerTokenTypeTracker';
+import { programIds, StringPublicKey, toPublicKey } from '../../utils';
+import { SCHEMA } from './schema';
 
 export async function emptyPaymentAccount(
   acceptPayment: StringPublicKey,
@@ -26,17 +26,17 @@ export async function emptyPaymentAccount(
   winningConfigIndex: number | null,
   winningConfigItemIndex: number | null,
   creatorIndex: number | null,
-  instructions: TransactionInstruction[]
+  instructions: TransactionInstruction[],
 ) {
   const PROGRAM_IDS = programIds();
   const store = PROGRAM_IDS.store;
   if (!store) {
-    throw new Error("Store not initialized");
+    throw new Error('Store not initialized');
   }
 
   const safetyDepositConfig = await getSafetyDepositConfig(
     auctionManager,
-    safetyDepositBox
+    safetyDepositBox,
   );
 
   const tokenTracker = await getAuctionWinnerTokenTypeTracker(auctionManager);
@@ -73,8 +73,8 @@ export async function emptyPaymentAccount(
           winningConfigItemIndex,
           creatorIndex,
           safetyDepositBox,
-          recipient
-        )
+          recipient,
+        ),
       ),
       isSigner: false,
       isWritable: true,
@@ -148,6 +148,6 @@ export async function emptyPaymentAccount(
       keys,
       programId: toPublicKey(PROGRAM_IDS.metaplex),
       data,
-    })
+    }),
   );
 }

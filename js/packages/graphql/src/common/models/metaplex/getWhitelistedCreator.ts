@@ -3,17 +3,17 @@ import {
   programIds,
   toPublicKey,
   StringPublicKey,
-} from "../../utils";
-import { METAPLEX_PREFIX } from "./constants";
+} from '../../utils';
+import { METAPLEX_PREFIX } from './constants';
 
 export async function getWhitelistedCreator(
   creator: StringPublicKey,
-  storeId?: StringPublicKey
+  storeId?: StringPublicKey,
 ) {
   const PROGRAM_IDS = programIds();
   const store = storeId || PROGRAM_IDS.store;
   if (!store) {
-    throw new Error("Store not initialized");
+    throw new Error('Store not initialized');
   }
 
   return (
@@ -24,7 +24,7 @@ export async function getWhitelistedCreator(
         toPublicKey(store).toBuffer(),
         toPublicKey(creator).toBuffer(),
       ],
-      toPublicKey(PROGRAM_IDS.metaplex)
+      toPublicKey(PROGRAM_IDS.metaplex),
     )
   )[0];
 }

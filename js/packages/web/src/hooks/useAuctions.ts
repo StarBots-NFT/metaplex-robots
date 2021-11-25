@@ -67,9 +67,9 @@ type CachedRedemptionKeys = Record<
 export function useStoreAuctionsList() {
   const { auctions, auctionManagersByAuction } = useMeta();
   const result = useMemo(() => {
-    return Object.values(auctionManagersByAuction).map(
-      manager => auctions[manager.info.auction],
-    ).filter(Boolean);
+    return Object.values(auctionManagersByAuction)
+      .map(manager => auctions[manager.info.auction])
+      .filter(Boolean);
   }, [Object.keys(auctions).length, auctionManagersByAuction]);
   return result;
 }

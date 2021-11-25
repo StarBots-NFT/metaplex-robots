@@ -682,13 +682,18 @@ programCommand('mint_one_token')
     'custom rpc url since this is a heavy command',
   )
   .action(async (nft_address: PublicKey, options, cmd) => {
-    const { keypair, env, cacheName, rpcUrl } = cmd.opts();
+    try {
+      const { keypair, env, cacheName, rpcUrl } = cmd.opts();
 
-    const cacheContent = loadCache(cacheName, env);
-    const configAddress = new PublicKey(cacheContent.program.config);
-    const tx = await mint(keypair, nft_address, env, configAddress, rpcUrl);
+      const cacheContent = loadCache(cacheName, env);
+      const configAddress = new PublicKey(cacheContent.program.config);
+      const tx = await mint(keypair, nft_address, env, configAddress, rpcUrl);
 
-    log.info('mint_one_token finished', tx);
+      log.info('mint_one_token finished', tx);
+    } catch (err) {
+      console.log(err, 'err');
+      console.log(JSON.stringify(err), 'zzz');
+    }
   });
 
 programCommand('sign')

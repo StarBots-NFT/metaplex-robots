@@ -1,7 +1,7 @@
-import { JsonProperty, Serializable } from "typescript-json-serializer";
-import { AuctionManagerStatus } from "../AuctionManagerStatus";
-import { ParticipationStateV1 } from "./ParticipationStateV1";
-import { WinningConfigState } from "./WinningConfigState";
+import { JsonProperty, Serializable } from 'typescript-json-serializer';
+import { AuctionManagerStatus } from '../AuctionManagerStatus';
+import { ParticipationStateV1 } from './ParticipationStateV1';
+import { WinningConfigState } from './WinningConfigState';
 
 @Serializable()
 export class AuctionManagerStateV1 {

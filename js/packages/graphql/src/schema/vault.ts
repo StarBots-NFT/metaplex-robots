@@ -1,8 +1,8 @@
-import { enumType, objectType } from "nexus";
-import dedent from "dedent";
+import { enumType, objectType } from 'nexus';
+import dedent from 'dedent';
 
 export const VaultKey = enumType({
-  name: "VaultKey",
+  name: 'VaultKey',
   members: {
     Uninitialized: 0,
     VaultV1: 3,
@@ -12,7 +12,7 @@ export const VaultKey = enumType({
 });
 
 export const VaultState = enumType({
-  name: "VaultState",
+  name: 'VaultState',
   members: {
     Inactive: 0,
     Active: 1,
@@ -22,56 +22,56 @@ export const VaultState = enumType({
 });
 
 export const SafetyDepositBox = objectType({
-  name: "SafetyDepositBox",
+  name: 'SafetyDepositBox',
   definition(t) {
-    t.nonNull.field("key", {
+    t.nonNull.field('key', {
       type: VaultKey,
       description:
         "Each token type in a vault has it's own box that contains it's mint and a look-back",
     });
-    t.nonNull.pubkey("vault", {
-      deprecation: "VaultKey pointing to the parent vault",
+    t.nonNull.pubkey('vault', {
+      deprecation: 'VaultKey pointing to the parent vault',
     });
-    t.nonNull.pubkey("tokenMint", {
+    t.nonNull.pubkey('tokenMint', {
       description: "This particular token's mint",
     });
-    t.nonNull.pubkey("store", {
-      description: "Account that stores the tokens under management",
+    t.nonNull.pubkey('store', {
+      description: 'Account that stores the tokens under management',
     });
-    t.nonNull.int("order", {
-      deprecation: "The order in the array of registries",
+    t.nonNull.int('order', {
+      deprecation: 'The order in the array of registries',
     });
   },
 });
 
 export const Vault = objectType({
-  name: "Vault",
+  name: 'Vault',
   definition(t) {
-    t.field("key", { type: VaultKey });
-    t.pubkey("tokenProgram", { deprecation: "Store token program used" });
-    t.pubkey("fractionMint", {
-      description: "Mint that produces the fractional shares",
+    t.field('key', { type: VaultKey });
+    t.pubkey('tokenProgram', { deprecation: 'Store token program used' });
+    t.pubkey('fractionMint', {
+      description: 'Mint that produces the fractional shares',
     });
-    t.pubkey("authority", {
-      description: "Authority who can make changes to the vault",
+    t.pubkey('authority', {
+      description: 'Authority who can make changes to the vault',
     });
-    t.pubkey("fractionTreasury", {
+    t.pubkey('fractionTreasury', {
       description:
-        "treasury where fractional shares are held for redemption by authority",
+        'treasury where fractional shares are held for redemption by authority',
     });
-    t.pubkey("redeemTreasury", {
+    t.pubkey('redeemTreasury', {
       description:
-        "treasury where monies are held for fractional share holders to redeem(burn) shares once buyout is made",
+        'treasury where monies are held for fractional share holders to redeem(burn) shares once buyout is made',
     });
-    t.boolean("allowFurtherShareCreation", {
+    t.boolean('allowFurtherShareCreation', {
       description:
-        "Can authority mint more shares from fraction_mint after activation",
+        'Can authority mint more shares from fraction_mint after activation',
     });
-    t.pubkey("pricingLookupAddress", {
+    t.pubkey('pricingLookupAddress', {
       description:
-        "Must point at an ExternalPriceAccount, which gives permission and price for buyout.",
+        'Must point at an ExternalPriceAccount, which gives permission and price for buyout.',
     });
-    t.int("tokenTypeCount", {
+    t.int('tokenTypeCount', {
       description: dedent`
         In inactive state, we use this to set the order key on Safety Deposit Boxes being added and
         then we increment it and save so the next safety deposit box gets the next number.
@@ -81,12 +81,12 @@ export const Vault = objectType({
         then we can deactivate the vault.
     `,
     });
-    t.bn("lockedPricePerShare", {
+    t.bn('lockedPricePerShare', {
       description: dedent`
         Once combination happens, we copy price per share to vault so that if something nefarious happens
         to external price account, like price change, we still have the math 'saved' for use in our calcs
     `,
     });
-    t.field("state", { type: VaultState });
+    t.field('state', { type: VaultState });
   },
 });

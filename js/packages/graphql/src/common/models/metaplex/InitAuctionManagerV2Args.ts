@@ -1,5 +1,5 @@
-import BN from "bn.js";
-import { TupleNumericType } from "./TupleNumericType";
+import BN from 'bn.js';
+import { TupleNumericType } from './TupleNumericType';
 
 export class InitAuctionManagerV2Args {
   instruction = 17;

@@ -27,7 +27,8 @@ import {
   useConnection,
   useConnectionConfig,
   useMint,
-  useMeta, BidStateType,
+  useMeta,
+  BidStateType,
 } from '@oyster/common';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { MintInfo } from '@solana/spl-token';
@@ -101,7 +102,8 @@ export const AuctionView = () => {
   }
   const nftCount = auction?.items.flat().length;
   const winnerCount = auction?.items.length;
-  const isOpen = auction?.auction.info.bidState.type === BidStateType.OpenEdition;
+  const isOpen =
+    auction?.auction.info.bidState.type === BidStateType.OpenEdition;
   const hasDescription = data === undefined || data.description === undefined;
   const description = data?.description;
   const attributes = data?.attributes;
@@ -165,8 +167,10 @@ export const AuctionView = () => {
               <span>
                 {winnerCount === undefined ? (
                   <Skeleton paragraph={{ rows: 0 }} />
+                ) : isOpen ? (
+                  'Unlimited'
                 ) : (
-                  isOpen ?  "Unlimited" : winnerCount
+                  winnerCount
                 )}
               </span>
             </div>
@@ -175,8 +179,10 @@ export const AuctionView = () => {
               <span>
                 {nftCount === undefined ? (
                   <Skeleton paragraph={{ rows: 0 }} />
+                ) : isOpen ? (
+                  'Open'
                 ) : (
-                  isOpen ?  "Open" : nftCount
+                  nftCount
                 )}
               </span>
             </div>
@@ -323,8 +329,10 @@ export const AuctionView = () => {
                   <span>
                     {winnerCount === undefined ? (
                       <Skeleton paragraph={{ rows: 0 }} />
+                    ) : isOpen ? (
+                      'Unlimited'
                     ) : (
-                      isOpen ? "Unlimited" : winnerCount
+                      winnerCount
                     )}
                   </span>
                 </div>
@@ -333,8 +341,10 @@ export const AuctionView = () => {
                   <span>
                     {nftCount === undefined ? (
                       <Skeleton paragraph={{ rows: 0 }} />
+                    ) : isOpen ? (
+                      'Open'
                     ) : (
-                      isOpen ? "Open" : nftCount
+                      nftCount
                     )}
                   </span>
                 </div>

@@ -1,14 +1,14 @@
-import { findProgramAddress, programIds, toPublicKey } from "../../utils";
-import { METAPLEX_PREFIX } from "./constants";
+import { findProgramAddress, programIds, toPublicKey } from '../../utils';
+import { METAPLEX_PREFIX } from './constants';
 
 export async function getPrizeTrackingTicket(
   auctionManager: string,
-  mint: string
+  mint: string,
 ) {
   const PROGRAM_IDS = programIds();
   const store = PROGRAM_IDS.store;
   if (!store) {
-    throw new Error("Store not initialized");
+    throw new Error('Store not initialized');
   }
 
   return (
@@ -19,7 +19,7 @@ export async function getPrizeTrackingTicket(
         toPublicKey(auctionManager).toBuffer(),
         toPublicKey(mint).toBuffer(),
       ],
-      toPublicKey(PROGRAM_IDS.metaplex)
+      toPublicKey(PROGRAM_IDS.metaplex),
     )
   )[0];
 }

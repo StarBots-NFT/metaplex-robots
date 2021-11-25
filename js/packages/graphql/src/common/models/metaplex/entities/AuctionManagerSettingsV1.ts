@@ -1,6 +1,6 @@
-import { WinningConfig } from "./WinningConfig";
-import { ParticipationConfigV1 } from "./ParticipationConfigV1";
-import { JsonProperty, Serializable } from "typescript-json-serializer";
+import { WinningConfig } from './WinningConfig';
+import { ParticipationConfigV1 } from './ParticipationConfigV1';
+import { JsonProperty, Serializable } from 'typescript-json-serializer';
 
 @Serializable()
 export class AuctionManagerSettingsV1 {

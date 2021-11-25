@@ -2,12 +2,12 @@ import {
   SystemProgram,
   SYSVAR_RENT_PUBKEY,
   TransactionInstruction,
-} from "@solana/web3.js";
-import { serialize } from "borsh";
+} from '@solana/web3.js';
+import { serialize } from 'borsh';
 
-import { SCHEMA } from ".";
-import { programIds, StringPublicKey, toPublicKey } from "../../utils";
-import { DeprecatedValidateParticipationArgs } from "./DeprecatedValidateParticipationArgs";
+import { SCHEMA } from '.';
+import { programIds, StringPublicKey, toPublicKey } from '../../utils';
+import { DeprecatedValidateParticipationArgs } from './DeprecatedValidateParticipationArgs';
 
 export async function deprecatedValidateParticipation(
   auctionManager: StringPublicKey,
@@ -20,7 +20,7 @@ export async function deprecatedValidateParticipation(
   safetyDepositBox: StringPublicKey,
   safetyDepositBoxTokenStore: StringPublicKey,
   vault: StringPublicKey,
-  instructions: TransactionInstruction[]
+  instructions: TransactionInstruction[],
 ) {
   const PROGRAM_IDS = programIds();
 
@@ -98,6 +98,6 @@ export async function deprecatedValidateParticipation(
       keys,
       programId: toPublicKey(PROGRAM_IDS.metaplex),
       data,
-    })
+    }),
   );
 }

@@ -1,6 +1,5 @@
 import * as anchor from '@project-serum/anchor';
-import { Token, AccountLayout } from '@solana/spl-token';
-import { TOKEN_PROGRAM_ID } from './constants';
+import { Token, AccountLayout, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 
 export type TransferTokenType = {
   connection: anchor.web3.Connection;
@@ -10,12 +9,11 @@ export type TransferTokenType = {
   transferFromATA: anchor.web3.PublicKey;
 };
 
-export default async function transferToken({
+export async function createATAToken({
   connection,
   userPublicKey,
   newAtaTokenAdressPublicKey,
   nftTokenAddress,
-  transferFromATA,
 }: TransferTokenType) {
   // https://explorer.solana.com/address/HJdiGaCEa7gg7dyNqkxWWkaGvDNxTHEzGkcCqDophJM7?cluster=devnet
   const createTempTokenAccountIx = anchor.web3.SystemProgram.createAccount({
@@ -34,6 +32,27 @@ export default async function transferToken({
     newAtaTokenAdressPublicKey,
     userPublicKey,
   );
+  return [
+    createTempTokenAccountIx,
+    initTempAccountIx,
+  ];
+}
+
+export default async function transferToken({
+  connection,
+  userPublicKey,
+  newAtaTokenAdressPublicKey,
+  nftTokenAddress,
+  transferFromATA,
+}: TransferTokenType) {
+  // https://explorer.solana.com/address/HJdiGaCEa7gg7dyNqkxWWkaGvDNxTHEzGkcCqDophJM7?cluster=devnet
+  const txs = await createATAToken({
+    connection,
+    userPublicKey,
+    newAtaTokenAdressPublicKey,
+    nftTokenAddress,
+    transferFromATA,
+  });
 
   const transferXTokensToTempAccIx = Token.createTransferInstruction(
     TOKEN_PROGRAM_ID,
@@ -45,8 +64,7 @@ export default async function transferToken({
   );
 
   return [
-    createTempTokenAccountIx,
-    initTempAccountIx,
+    ...txs,
     transferXTokensToTempAccIx,
   ];
 }

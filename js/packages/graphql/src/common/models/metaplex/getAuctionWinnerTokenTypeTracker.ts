@@ -1,11 +1,11 @@
-import { findProgramAddress, programIds, toPublicKey } from "../../utils";
-import { METAPLEX_PREFIX, TOTALS } from "./index";
+import { findProgramAddress, programIds, toPublicKey } from '../../utils';
+import { METAPLEX_PREFIX, TOTALS } from './index';
 
 export async function getAuctionWinnerTokenTypeTracker(auctionManager: string) {
   const PROGRAM_IDS = programIds();
   const store = PROGRAM_IDS.store;
   if (!store) {
-    throw new Error("Store not initialized");
+    throw new Error('Store not initialized');
   }
 
   return (
@@ -16,7 +16,7 @@ export async function getAuctionWinnerTokenTypeTracker(auctionManager: string) {
         toPublicKey(auctionManager).toBuffer(),
         Buffer.from(TOTALS),
       ],
-      toPublicKey(PROGRAM_IDS.metaplex)
+      toPublicKey(PROGRAM_IDS.metaplex),
     )
   )[0];
 }

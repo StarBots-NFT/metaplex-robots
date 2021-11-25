@@ -1,5 +1,5 @@
-import { WinningConfigType } from "../WinningConfigType";
-import { JsonProperty, Serializable } from "typescript-json-serializer";
+import { WinningConfigType } from '../WinningConfigType';
+import { JsonProperty, Serializable } from 'typescript-json-serializer';
 
 @Serializable()
 export class WinningConfigItem {

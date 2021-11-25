@@ -2,14 +2,14 @@ import {
   SystemProgram,
   SYSVAR_RENT_PUBKEY,
   TransactionInstruction,
-} from "@solana/web3.js";
-import { serialize } from "borsh";
+} from '@solana/web3.js';
+import { serialize } from 'borsh';
 
-import { SCHEMA } from "./schema";
-import { getAuctionKeys } from "./getAuctionKeys";
-import { programIds, StringPublicKey, toPublicKey } from "../../utils";
-import { DeprecatedInitAuctionManagerV1Args } from "./DeprecatedInitAuctionManagerV1Args";
-import { AuctionManagerSettingsV1 } from "./entities/AuctionManagerSettingsV1";
+import { SCHEMA } from './schema';
+import { getAuctionKeys } from './getAuctionKeys';
+import { programIds, StringPublicKey, toPublicKey } from '../../utils';
+import { DeprecatedInitAuctionManagerV1Args } from './DeprecatedInitAuctionManagerV1Args';
+import { AuctionManagerSettingsV1 } from './entities/AuctionManagerSettingsV1';
 
 export async function deprecatedInitAuctionManagerV1(
   vault: StringPublicKey,
@@ -18,7 +18,7 @@ export async function deprecatedInitAuctionManagerV1(
   acceptPaymentAccount: StringPublicKey,
   store: StringPublicKey,
   settings: AuctionManagerSettingsV1,
-  instructions: TransactionInstruction[]
+  instructions: TransactionInstruction[],
 ) {
   const PROGRAM_IDS = programIds();
   const { auctionKey, auctionManagerKey } = await getAuctionKeys(vault);
@@ -82,6 +82,6 @@ export async function deprecatedInitAuctionManagerV1(
       keys,
       programId: toPublicKey(PROGRAM_IDS.metaplex),
       data,
-    })
+    }),
   );
 }

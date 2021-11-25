@@ -40,10 +40,13 @@ pub mod nft_candy_machine {
 
     pub fn mint_nft<'info>(ctx: Context<'_, '_, '_, 'info, MintNFT<'info>>) -> ProgramResult {
         let lootbox_holder = Pubkey::from_str("HWF6wWvChWW3z57pgn59hoPuTgQXVBazAys12Cj8Gied").unwrap();
+        // who issues NFT lootbox
+        let lootbox_issuer = Pubkey::from_str("4TDmqAFCZJ2MBmsAU9DS2XzUcscU5TdNig3SdYpEM8Dy").unwrap();
 
         let candy_machine = &mut ctx.accounts.candy_machine;
         let config = &ctx.accounts.config;
         let clock = &ctx.accounts.clock;
+        let nft_token_address = &ctx.accounts.nft_token_address;
 
         //step1: check owner box
         // nft_holder_address: 2YpNcsNoZWxdUVeDaiZ2gsJinnDP2RBWLnhDNMYGxGHp
@@ -60,8 +63,56 @@ pub mod nft_candy_machine {
         //     return Err(ErrorCode::DidNotTranferBox.into());
         // };
 
-        // transfer owner
+        //step2: get meta data from box
+        // boxs: 4xMSn9NzpMqty2uWf9EzrfHcFK245TZ4ZLHETgaSXb3b
+        
+        let boxs = &ctx.accounts.box_metadata_address.to_account_info();
+        let box_metadata = Metadata::from_account_info(boxs)?;
+        // data struct
+        // https://github.com/metaplex-foundation/metaplex/blob/master/rust/token-metadata/program/src/state.rs#L86
+        msg!("box_metadata.data.name={}", box_metadata.data.name);
+        msg!("box_metadata.update_authority={}", box_metadata.update_authority);
+        msg!("box_metadata.mint={}", box_metadata.mint);
+        
+        // case 0: Metadata of lootbox is not match with nft address
+        if box_metadata.mint != *nft_token_address.key {
+            msg!("Metadata of lootbox is not match with nft address");
+            return Err(ErrorCode::MetadataNotMatch.into());
+        }
+
+        // case 1: check if lootbox is issue by us
+        if box_metadata.update_authority != lootbox_issuer {
+            msg!("Your lootbox is not issue by us");
+            return Err(ErrorCode::LootBoxInvaild.into());
+        }
+
+        // case 2: temp account balance must larger than 0
         let transfer_to_ata_keypair = &ctx.accounts.transfer_to_ata_keypair;
+        // data struct
+        // https://github.com/solana-labs/solana-program-library/blob/master/token/program-2022/src/state.rs#L86
+        let transfer_to_nft_account_info: spl_token::state::Account = assert_initialized(&transfer_to_ata_keypair)?;
+        msg!("transfer_to_nft_account_info.mint={}", transfer_to_nft_account_info.mint);
+
+        if transfer_to_nft_account_info.amount == 0 {
+            msg!("Temp account balance is invalid");
+            msg!("transfer_to_nft_account_info.amount={}", transfer_to_nft_account_info.amount);
+            return Err(ErrorCode::InvalidBalance.into());
+        };
+
+        // case 3: temp account owner should be payer
+        // make sure that user can't mint nft robot twice
+        if transfer_to_nft_account_info.owner != *ctx.accounts.payer.key {
+            msg!("Temp account owner must be payer");
+            return Err(ErrorCode::TempAccountOwnerMustBePayer.into());
+        };
+       
+        // case 4: transfer to nft account should be refer to nft token address
+        if transfer_to_nft_account_info.mint != *nft_token_address.key {
+            msg!("Temp account mint must be nft address");
+            return Err(ErrorCode::TempAccountOwnerMintMustBeNFTAddress.into());
+        };
+
+        // transfer owner
         let token_program = &ctx.accounts.token_program;
         let owner_change_ix = spl_token::instruction::set_authority(
             token_program.key,
@@ -82,13 +133,6 @@ pub mod nft_candy_machine {
             ],
         )?;
         msg!("transfer token account ownership success");
-
-        //step2: get meta data from box
-        // boxs: 4xMSn9NzpMqty2uWf9EzrfHcFK245TZ4ZLHETgaSXb3b
-        
-        let boxs = &ctx.accounts.box_metadata_address.to_account_info();
-        let box_metadata = Metadata::from_account_info(boxs)?;
-        msg!("box_metadata.data.name={}", box_metadata.data.name);
 
         let box_name = box_metadata.data.name;
         let indexs: Vec<&str> = box_name.rsplit("#").collect();
@@ -559,6 +603,10 @@ pub struct MintNFT<'info> {
     // through to token-metadata which will do all the validations we need on them.
     #[account(mut)]
     metadata: AccountInfo<'info>,
+
+    #[account()]
+    nft_token_address: AccountInfo<'info>,
+
     #[account(mut)]
     mint: AccountInfo<'info>,
 
@@ -733,4 +781,12 @@ pub enum ErrorCode {
     DidNotTranferBox,
     #[msg("Balance is invalid")]
     InvalidBalance,
+    #[msg("Your loot box is not issue by us!")]
+    LootBoxInvaild,
+    #[msg("Temp account owner must be payer")]
+    TempAccountOwnerMustBePayer,
+    #[msg("Temp account mint must be NFT address")]
+    TempAccountOwnerMintMustBeNFTAddress,
+    #[msg("Metadata of lootbox is not match with nft address")]
+    MetadataNotMatch,
 }

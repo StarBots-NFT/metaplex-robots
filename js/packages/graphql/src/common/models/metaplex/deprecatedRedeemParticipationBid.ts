@@ -2,15 +2,15 @@ import {
   SystemProgram,
   SYSVAR_RENT_PUBKEY,
   TransactionInstruction,
-} from "@solana/web3.js";
-import { serialize } from "borsh";
+} from '@solana/web3.js';
+import { serialize } from 'borsh';
 
-import { getSafetyDepositConfig } from "./getSafetyDepositConfig";
-import { getBidderKeys } from "./getBidderKeys";
-import { SCHEMA } from "./schema";
-import { getAuctionKeys } from "./getAuctionKeys";
-import { programIds, StringPublicKey, toPublicKey } from "../../utils";
-import { DeprecatedRedeemParticipationBidArgs } from "./DeprecatedRedeemParticipationBidArgs";
+import { getSafetyDepositConfig } from './getSafetyDepositConfig';
+import { getBidderKeys } from './getBidderKeys';
+import { SCHEMA } from './schema';
+import { getAuctionKeys } from './getAuctionKeys';
+import { programIds, StringPublicKey, toPublicKey } from '../../utils';
+import { DeprecatedRedeemParticipationBidArgs } from './DeprecatedRedeemParticipationBidArgs';
 
 export async function deprecatedRedeemParticipationBid(
   vault: StringPublicKey,
@@ -23,24 +23,24 @@ export async function deprecatedRedeemParticipationBid(
   participationPrintingAccount: StringPublicKey,
   transferAuthority: StringPublicKey,
   acceptPaymentAccount: StringPublicKey,
-  tokenPaymentAccount: StringPublicKey
+  tokenPaymentAccount: StringPublicKey,
 ) {
   const PROGRAM_IDS = programIds();
   const store = PROGRAM_IDS.store;
   if (!store) {
-    throw new Error("Store not initialized");
+    throw new Error('Store not initialized');
   }
 
   const { auctionKey, auctionManagerKey } = await getAuctionKeys(vault);
 
   const { bidRedemption, bidMetadata } = await getBidderKeys(
     auctionKey,
-    bidder
+    bidder,
   );
 
   const safetyDepositConfig = await getSafetyDepositConfig(
     auctionManagerKey,
-    safetyDeposit
+    safetyDeposit,
   );
 
   const value = new DeprecatedRedeemParticipationBidArgs();
@@ -158,6 +158,6 @@ export async function deprecatedRedeemParticipationBid(
       keys,
       programId: toPublicKey(PROGRAM_IDS.metaplex),
       data,
-    })
+    }),
   );
 }

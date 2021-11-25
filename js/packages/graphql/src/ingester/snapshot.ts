@@ -1,11 +1,11 @@
-import fs from "fs";
-import util from "util";
-import path from "path";
-import { tmpdir } from "os";
-import mkdirp from "mkdirp";
-import { Connection } from "@solana/web3.js";
-import logger from "../logger";
-import { Loader } from "./Loader";
+import fs from 'fs';
+import util from 'util';
+import path from 'path';
+import { tmpdir } from 'os';
+import mkdirp from 'mkdirp';
+import { Connection } from '@solana/web3.js';
+import logger from '../logger';
+import { Loader } from './Loader';
 
 const writeFileAsync = util.promisify(fs.writeFile);
 const readFileAsync = util.promisify(fs.readFile);
@@ -13,7 +13,7 @@ const readFileAsync = util.promisify(fs.readFile);
 export function wrapLoaderConnection(loader: Loader) {
   const snapshotPath = process.env.SNAPSHOT;
   if (snapshotPath) {
-    const dir = [":tmp", "1", "true"].includes(snapshotPath)
+    const dir = [':tmp', '1', 'true'].includes(snapshotPath)
       ? tmpdir()
       : snapshotPath;
 
@@ -26,12 +26,12 @@ export function wrapLoaderConnection(loader: Loader) {
 export function snapshot(
   connection: Connection,
   network: string,
-  dir = tmpdir()
+  dir = tmpdir(),
 ) {
   const readExistedSnapshot = async (name: string, args: any[]) => {
     await mkdirp(dir);
 
-    if (name === "getProgramAccounts" && Array.isArray(args)) {
+    if (name === 'getProgramAccounts' && Array.isArray(args)) {
       const filename = `${network}-${name}-${args[0]}.json`;
       const filepath = path.join(dir, filename);
       try {
@@ -40,12 +40,12 @@ export function snapshot(
         logger.info(`📖 Read from cache ${filepath}`);
         return json;
       } catch (_) {
-        logger.info("📖 Read from network", name, args);
+        logger.info('📖 Read from network', name, args);
       }
     }
   };
   const writeToSnapshot = async (resp: any, name: string, args: any[]) => {
-    if (name === "getProgramAccounts" && Array.isArray(args)) {
+    if (name === 'getProgramAccounts' && Array.isArray(args)) {
       const filename = `${network}-${name}-${args[0]}.json`;
       const filepath = path.join(dir, filename);
       const data = JSON.stringify(resp);
@@ -60,7 +60,7 @@ export function snapshot(
 const setupFetch = (
   connection: Connection,
   preload?: (...args: any[]) => Promise<any>,
-  postload?: (response: any, ...args: any[]) => void
+  postload?: (response: any, ...args: any[]) => void,
 ) => {
   const conn = connection as any;
   const _rpcRequest = conn._rpcRequest.bind(connection);

@@ -2,16 +2,16 @@ import {
   SystemProgram,
   SYSVAR_RENT_PUBKEY,
   TransactionInstruction,
-} from "@solana/web3.js";
-import { serialize } from "borsh";
+} from '@solana/web3.js';
+import { serialize } from 'borsh';
 
-import { getOriginalAuthority } from "./getOriginalAuthority";
-import { SCHEMA } from "./schema";
-import { getAuctionKeys } from "./getAuctionKeys";
-import { programIds, StringPublicKey, toPublicKey } from "../../utils";
+import { getOriginalAuthority } from './getOriginalAuthority';
+import { SCHEMA } from './schema';
+import { getAuctionKeys } from './getAuctionKeys';
+import { programIds, StringPublicKey, toPublicKey } from '../../utils';
 
-import { getSafetyDepositBoxValidationTicket } from "./getSafetyDepositBoxValidationTicket";
-import { DeprecatedValidateSafetyDepositBoxV1Args } from "./DeprecatedValidateSafetyDepositBoxV1Args";
+import { getSafetyDepositBoxValidationTicket } from './getSafetyDepositBoxValidationTicket';
+import { DeprecatedValidateSafetyDepositBoxV1Args } from './DeprecatedValidateSafetyDepositBoxV1Args';
 
 export async function deprecatedValidateSafetyDepositBoxV1(
   vault: StringPublicKey,
@@ -27,7 +27,7 @@ export async function deprecatedValidateSafetyDepositBoxV1(
   whitelistedCreator: StringPublicKey | undefined,
   store: StringPublicKey,
   printingMint?: StringPublicKey,
-  printingMintAuthority?: StringPublicKey
+  printingMintAuthority?: StringPublicKey,
 ) {
   const PROGRAM_IDS = programIds();
 
@@ -35,7 +35,7 @@ export async function deprecatedValidateSafetyDepositBoxV1(
 
   const originalAuthorityLookup = await getOriginalAuthority(
     auctionKey,
-    metadata
+    metadata,
   );
 
   const value = new DeprecatedValidateSafetyDepositBoxV1Args();
@@ -46,8 +46,8 @@ export async function deprecatedValidateSafetyDepositBoxV1(
       pubkey: toPublicKey(
         await getSafetyDepositBoxValidationTicket(
           auctionManagerKey,
-          safetyDepositBox
-        )
+          safetyDepositBox,
+        ),
       ),
       isSigner: false,
       isWritable: true,
@@ -153,6 +153,6 @@ export async function deprecatedValidateSafetyDepositBoxV1(
       keys,
       programId: toPublicKey(PROGRAM_IDS.metaplex),
       data,
-    })
+    }),
   );
 }

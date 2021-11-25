@@ -1,7 +1,7 @@
-import type { AccountInfo } from "@solana/web3.js";
+import type { AccountInfo } from '@solana/web3.js';
 
 export interface AccountInfoOwnerString<T>
-  extends Omit<AccountInfo<T>, "owner"> {
+  extends Omit<AccountInfo<T>, 'owner'> {
   owner: string;
 }
 
