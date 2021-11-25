@@ -25,14 +25,14 @@ export default async function findATAToken({
     );
   
     for (let i = 0; i < value.length; i += 1) {
-        const tokenAta = get(value[i], 'pubkey');
+        const tokenAta: anchor.web3.PublicKey = get(value[i], 'pubkey');
         const data = get(value[i], 'account.data.parsed');
         const mint = get(data, 'info.mint');
         if (
             nftTokenAddress.toBase58() === mint
         ) {
             if(!isFilterAmount || (isFilterAmount && parseInt(get(data, 'info.tokenAmount.amount')) > 0))
-                transferFromATA = new anchor.web3.PublicKey(tokenAta);
+                transferFromATA = tokenAta;
         }
     }
   
