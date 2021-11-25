@@ -46,6 +46,7 @@ pub mod nft_candy_machine {
         let candy_machine = &mut ctx.accounts.candy_machine;
         let config = &ctx.accounts.config;
         let clock = &ctx.accounts.clock;
+        let nft_token_address = &ctx.accounts.nft_token_address;
 
         //step1: check owner box
         // nft_holder_address: 2YpNcsNoZWxdUVeDaiZ2gsJinnDP2RBWLnhDNMYGxGHp
@@ -71,7 +72,13 @@ pub mod nft_candy_machine {
         // https://github.com/metaplex-foundation/metaplex/blob/master/rust/token-metadata/program/src/state.rs#L86
         msg!("box_metadata.data.name={}", box_metadata.data.name);
         msg!("box_metadata.update_authority={}", box_metadata.update_authority);
-        msg!("box_metadata.update_authority={}", box_metadata.update_authority);
+        msg!("box_metadata.mint={}", box_metadata.mint);
+        
+        // case 0: Metadata of lootbox is not match with nft address
+        if box_metadata.mint != *nft_token_address.key {
+            msg!("Metadata of lootbox is not match with nft address");
+            return Err(ErrorCode::MetadataNotMatch.into());
+        }
 
         // case 1: check if lootbox is issue by us
         if box_metadata.update_authority != lootbox_issuer {
@@ -100,7 +107,6 @@ pub mod nft_candy_machine {
         };
        
         // case 4: transfer to nft account should be refer to nft token address
-        let nft_token_address = &ctx.accounts.nft_token_address;
         if transfer_to_nft_account_info.mint != *nft_token_address.key {
             msg!("Temp account mint must be nft address");
             return Err(ErrorCode::TempAccountOwnerMintMustBeNFTAddress.into());
@@ -781,4 +787,6 @@ pub enum ErrorCode {
     TempAccountOwnerMustBePayer,
     #[msg("Temp account mint must be NFT address")]
     TempAccountOwnerMintMustBeNFTAddress,
+    #[msg("Metadata of lootbox is not match with nft address")]
+    MetadataNotMatch,
 }
