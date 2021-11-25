@@ -692,7 +692,6 @@ programCommand('mint_one_token')
       log.info('mint_one_token finished', tx);
     } catch (err) {
       console.log(err, 'err');
-      console.log(JSON.stringify(err), 'zzz');
     }
   });
 
