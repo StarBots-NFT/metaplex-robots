@@ -195,7 +195,7 @@ describe("nft-candy-machine", function () {
   // Address of the deployed program.
   const programId = new anchor.web3.PublicKey(
     // "cndyAnrLdpjq1Ssp1z8xxDsB8dxe7u4HL5Nxi2K5WXZ",
-    "H4AgvHT31RU9GKx3rPtttdhfsb9k6BLGnNR2CkfQvQto"
+    "62pGDxQSA9pYR6SVE2Z58zAi2Xzpxyztgp4w5otf4bXE"
   );
 
   const walletWrapper = new anchor.Wallet(myWallet);
