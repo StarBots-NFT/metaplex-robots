@@ -17,7 +17,7 @@ use {
     std::{ cell::Ref, str::FromStr },
 };
 
-anchor_lang::declare_id!("62pGDxQSA9pYR6SVE2Z58zAi2Xzpxyztgp4w5otf4bXE");
+anchor_lang::declare_id!("H4AgvHT31RU9GKx3rPtttdhfsb9k6BLGnNR2CkfQvQto");
 
 const PREFIX: &str = "candy_machine";
 
@@ -41,7 +41,7 @@ pub mod nft_candy_machine {
     pub fn mint_nft<'info>(ctx: Context<'_, '_, '_, 'info, MintNFT<'info>>) -> ProgramResult {
         let lootbox_holder = Pubkey::from_str("HWF6wWvChWW3z57pgn59hoPuTgQXVBazAys12Cj8Gied").unwrap();
         // who issues NFT lootbox
-        let lootbox_issuer = Pubkey::from_str("5HhZVuMsrGthbbHMF8XXKNjKBxmQwy7fpXTq78E73b5x").unwrap();
+        let lootbox_issuer = Pubkey::from_str("4TDmqAFCZJ2MBmsAU9DS2XzUcscU5TdNig3SdYpEM8Dy").unwrap();
 
         let candy_machine = &mut ctx.accounts.candy_machine;
         let config = &ctx.accounts.config;
