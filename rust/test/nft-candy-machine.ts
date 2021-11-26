@@ -459,8 +459,7 @@ describe("nft-candy-machine", function () {
 
     const transferToATAKeypair = new anchor.web3.Keypair();
 
-    it("mints 10x and then ends due to being out of candy", async function () {
-      // for (let i = 0; i < 11; i++) {
+    it("mint 1 robot and transfer 1 lootbox", async function () {
       // transfer NFT
       const primaryWalletLootboxAtaInfo = await nftLootboxToken.getAccountInfo(PRIMARY_WALLET_LOOTBOX_ATA_ADDRESS);
 
@@ -512,7 +511,7 @@ describe("nft-candy-machine", function () {
             nftTokenAddress: NFT_LOOTBOX,
             transferToAtaKeypair: transferToATAKeypair.publicKey,
             boxMetadataAddress: await getMetadata(NFT_LOOTBOX),
-            nftHolderAddress: PRIMARY_WALLET_LOOTBOX_ATA_ADDRESS, // DONE
+            nftHolderAddress: PRIMARY_WALLET_LOOTBOX_ATA_ADDRESS,
 
             metadata,
             masterEdition,
@@ -582,7 +581,7 @@ describe("nft-candy-machine", function () {
       assert.ok(masterEditionAccount.data.length > 0);
     });
 
-    it("balance is invalid", async function () {
+    it("mint robot with empty temp account", async function () {
       const transferToATAKeypair = new anchor.web3.Keypair();
 
       try {
@@ -696,7 +695,7 @@ describe("nft-candy-machine", function () {
       }
     });
 
-    it("user send fake lootbox nft", async function () {
+    it("user try to send fake lootbox nft", async function () {
       try {
         // transfer NFT
         const transferToATAKeypair = new anchor.web3.Keypair();
@@ -843,7 +842,7 @@ describe("nft-candy-machine", function () {
       }
     });
 
-    it("send wrong metadata", async function () {
+    it("user try to send fake metadata address", async function () {
       try {
         const transferToATAKeypair = new anchor.web3.Keypair();
 
