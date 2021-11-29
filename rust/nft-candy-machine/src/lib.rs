@@ -17,7 +17,7 @@ use {
     std::{ cell::Ref, str::FromStr },
 };
 
-anchor_lang::declare_id!("H4AgvHT31RU9GKx3rPtttdhfsb9k6BLGnNR2CkfQvQto");
+anchor_lang::declare_id!("7jMfJDsquDLFkQStMzPeYHBR6ryjgqWJiPs5CHzBDvSy");
 
 const PREFIX: &str = "candy_machine";
 
@@ -176,14 +176,6 @@ pub mod nft_candy_machine {
         }
 
         msg!("mint_nft {}", data);
-
-        if candy_machine.starbots.contains(&data) { 
-            msg!("yes");
-            return Err(ErrorCode::MintLootBoxUsed.into());
-        } else {
-            msg!("no");
-            candy_machine.starbots.push(data);
-        }
 
         if let Some(mint) = candy_machine.token_mint {
             let token_account_info = &ctx.remaining_accounts[0];
@@ -515,7 +507,7 @@ pub mod nft_candy_machine {
         candy_machine.authority = *ctx.accounts.authority.key;
         candy_machine.config = ctx.accounts.config.key();
         candy_machine.bump = bump;
-
+        
         if ctx.remaining_accounts.len() > 0 {
             let token_mint_info = &ctx.remaining_accounts[0];
             let _token_mint: Mint = assert_initialized(&token_mint_info)?;
@@ -546,10 +538,12 @@ pub mod nft_candy_machine {
     }
 }
 
+// #[account(init, seeds=[PREFIX.as_bytes(), config.key().as_ref(), data.uuid.as_bytes()], payer=payer, bump=bump, space=8+32+32+33+32+64+64+64+200+12000*4+8)]
+
 #[derive(Accounts)]
 #[instruction(bump: u8, data: CandyMachineData)]
 pub struct InitializeCandyMachine<'info> {
-    #[account(init, seeds=[PREFIX.as_bytes(), config.key().as_ref(), data.uuid.as_bytes()], payer=payer, bump=bump, space=8+32+32+33+32+64+64+64+200+12000*4+8)]
+    #[account(init, seeds=[PREFIX.as_bytes(), config.key().as_ref(), data.uuid.as_bytes()], payer=payer, bump=bump, space=8+32+32+33+32+64+64+64+200)]
     candy_machine: ProgramAccount<'info, CandyMachine>,
     #[account(constraint= wallet.owner == &spl_token::id() || (wallet.data_is_empty() && wallet.lamports() > 0) )]
     wallet: AccountInfo<'info>,
@@ -657,8 +651,7 @@ pub struct CandyMachine {
     pub config: Pubkey,
     pub data: CandyMachineData,
     pub items_redeemed: u64,
-    pub bump: u8,
-    pub starbots: Vec<i32>,
+    pub bump: u8
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Default)]
