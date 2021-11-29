@@ -549,7 +549,7 @@ pub mod nft_candy_machine {
 #[derive(Accounts)]
 #[instruction(bump: u8, data: CandyMachineData)]
 pub struct InitializeCandyMachine<'info> {
-    #[account(init, seeds=[PREFIX.as_bytes(), config.key().as_ref(), data.uuid.as_bytes()], payer=payer, bump=bump, space=8+32+32+33+32+64+64+64+200+1200*4+8)]
+    #[account(init, seeds=[PREFIX.as_bytes(), config.key().as_ref(), data.uuid.as_bytes()], payer=payer, bump=bump, space=8+32+32+33+32+64+64+64+200+12000*4+8)]
     candy_machine: ProgramAccount<'info, CandyMachine>,
     #[account(constraint= wallet.owner == &spl_token::id() || (wallet.data_is_empty() && wallet.lamports() > 0) )]
     wallet: AccountInfo<'info>,
