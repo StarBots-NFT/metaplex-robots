@@ -26,9 +26,17 @@ fn print_type_of<T>(_: &T) {
 }
 
 fn sum_of_string(s: &str) -> u32 {
-    s.chars().fold(0, |acc, c| c.to_digit(10).unwrap_or(0) + acc)
+    let char_vec: Vec<char> = s.chars().collect();
+    let mut total: u32 = 0;
+    let mut length: usize = char_vec.len();
+    let base: u32 = 10; // an explicit type is required
+    for c in char_vec {
+        total = total + c.to_digit(10).unwrap_or(0) * base.pow(length as u32 - 1);
+        length -= 1;
+    }
+    return total;
 }
-  
+
 #[program]
 pub mod nft_candy_machine {
     use anchor_lang::solana_program::{
