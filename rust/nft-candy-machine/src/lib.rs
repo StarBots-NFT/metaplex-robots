@@ -25,16 +25,24 @@ fn print_type_of<T>(_: &T) {
     msg!("{}", std::any::type_name::<T>())
 }
 
-fn sum_of_string(s: &str) -> u32 {
-    let char_vec: Vec<char> = s.chars().collect();
-    let mut total: u32 = 0;
-    let mut length: usize = char_vec.len();
-    let base: u32 = 10; // an explicit type is required
-    for c in char_vec {
-        total = total + c.to_digit(10).unwrap_or(0) * base.pow(length as u32 - 1);
-        length -= 1;
+fn sum_of_string(s: &Vec<u32>) -> i32 {
+    let mut total: i32 = 0;
+    for c in s {
+        msg!("c: {}", c);
+        print_type_of(&c);
+            total = total * 10 + c.to_string().parse::<i32>().unwrap_or(0);
+        msg!("total: {}", total);
     }
+
+    // an explicit type is required
     return total;
+}
+
+fn parse_digits(t_num: &str) -> Vec<u32> {
+    t_num
+        .chars()
+        .filter_map(|a| a.to_digit(10))
+        .collect()
 }
 
 #[program]
@@ -144,10 +152,10 @@ pub mod nft_candy_machine {
 
         let box_name = box_metadata.data.name;
         let indexs: Vec<&str> = box_name.rsplit("#").collect();
-        let index = indexs[0].to_string();
         
-        msg!("index={}", index);
-        
+        let index = parse_digits(indexs[0].trim());
+        msg!("index length: {}", index.len());
+
         print_type_of(&index);
 
         // let data: i32 = FromStr::from_str(&index).unwrap();
