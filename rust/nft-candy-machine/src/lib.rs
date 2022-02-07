@@ -1,6 +1,8 @@
+pub mod error;
 pub mod utils;
 
 use {
+    error::ErrorCode,
     crate::utils::{assert_initialized, assert_owned_by, spl_token_transfer, TokenTransferParams},
     anchor_lang::{
         prelude::*, solana_program::system_program, AnchorDeserialize, AnchorSerialize,
@@ -54,6 +56,23 @@ pub mod nft_candy_machine {
 
     use super::*;
 
+    pub fn initialize_data_part(ctx: Context<CreatingPageIndex>, index: u8) -> ProgramResult {
+        let new_page_index = PagingIndex {
+            index,
+        };
+
+        let page_index = &mut ctx.accounts.page_index;
+        let mut new_data = PagingIndex::discriminator().try_to_vec().unwrap();
+        new_data.append(&mut new_page_index.try_to_vec().unwrap());
+        let mut data = page_index.data.borrow_mut();
+        // god forgive me couldnt think of better way to deal with this
+        for i in 0..new_data.len() {
+            msg!("new_data[i] = {} {}", i, new_data[i]);
+            data[i] = new_data[i];
+        }
+
+        Ok(())
+    }
 
     pub fn mint_nft_body_part<'info>(_ctx: Context<'_, '_, '_, 'info, MintNFT<'info>>) -> ProgramResult {
         // to do something
@@ -625,6 +644,13 @@ pub struct AddConfigLines<'info> {
     authority: AccountInfo<'info>,
 }
 
+#[account]
+#[derive(Default)]
+pub struct DataPart {
+    pub creator: Pubkey,
+    pub index: u8, // current index page
+}
+
 #[derive(Accounts)]
 pub struct MintNFT<'info> {
     config: ProgramAccount<'info, Config>,
@@ -783,50 +809,4 @@ pub struct Creator {
     pub verified: bool,
     // In percentages, NOT basis points ;) Watch out!
     pub share: u8,
-}
-
-#[error]
-pub enum ErrorCode {
-    #[msg("Account does not have correct owner!")]
-    IncorrectOwner,
-    #[msg("Account is not initialized!")]
-    Uninitialized,
-    #[msg("Mint Mismatch!")]
-    MintMismatch,
-    #[msg("Your loot box has beed used!")]
-    MintLootBoxUsed,
-    #[msg("Index greater than length!")]
-    IndexGreaterThanLength,
-    #[msg("Config must have atleast one entry!")]
-    ConfigMustHaveAtleastOneEntry,
-    #[msg("Numerical overflow error!")]
-    NumericalOverflowError,
-    #[msg("Can only provide up to 4 creators to candy machine (because candy machine is one)!")]
-    TooManyCreators,
-    #[msg("Uuid must be exactly of 6 length")]
-    UuidMustBeExactly6Length,
-    #[msg("Not enough tokens to pay for this minting")]
-    NotEnoughTokens,
-    #[msg("Not enough SOL to pay for this minting")]
-    NotEnoughSOL,
-    #[msg("Token transfer failed")]
-    TokenTransferFailed,
-    #[msg("Candy machine is empty!")]
-    CandyMachineEmpty,
-    #[msg("Candy machine is not live yet!")]
-    CandyMachineNotLiveYet,
-    #[msg("Number of config lines must be at least number of items available")]
-    ConfigLineMismatch,
-    #[msg("The Box did not tranfer to us")]
-    DidNotTranferBox,
-    #[msg("Balance is invalid")]
-    InvalidBalance,
-    #[msg("Your loot box is not issue by us!")]
-    LootBoxInvaild,
-    #[msg("Temp account owner must be payer")]
-    TempAccountOwnerMustBePayer,
-    #[msg("Temp account mint must be NFT address")]
-    TempAccountOwnerMintMustBeNFTAddress,
-    #[msg("Metadata of lootbox is not match with nft address")]
-    MetadataNotMatch,
 }

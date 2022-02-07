@@ -1,0 +1,35 @@
+{
+    "name": "Uncommon Battleship",
+    "symbol": "STARBOTS",
+    "description": "Parts Collection for Starbots NFT Game",
+    "seller_fee_basis_points": 5,
+    "image": "0.png",
+    "external_url": "https://starbots.net",
+    "attributes": [{
+        "trait_type": "type",
+        "value": "Body"
+    },
+    {
+    "trait_type": "tier",
+    "value": "Uncommon"
+    }, 
+    {
+    "trait_type": "subType",
+    "value": "Battleship"
+    }],
+    "collection": {
+        "name": "Starbots NFT 1st Launch",
+        "family": "Starbots NFT"
+    },
+    "properties": {
+        "files": [{
+            "uri": "0.png",
+            "type": "image/png"
+        }],
+        "category": "image",
+        "creators": [{
+            "address": "EkusoHTA9WccY1We8rTX2xkiFXF5FB5FtbJzWBW3ZjXw",
+            "share": 100
+        }]
+    }
+}

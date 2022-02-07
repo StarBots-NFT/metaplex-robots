@@ -1,0 +1,35 @@
+{
+    "name": "Uncommon Harpoon Gun",
+    "symbol": "STARBOTS",
+    "description": "Parts Collection for Starbots NFT Game",
+    "seller_fee_basis_points": 5,
+    "image": "4.png",
+    "external_url": "https://starbots.net",
+    "attributes": [{
+        "trait_type": "type",
+        "value": "Gadget"
+    },
+    {
+    "trait_type": "tier",
+    "value": "Uncommon"
+    }, 
+    {
+    "trait_type": "subType",
+    "value": "Harpoon Gun"
+    }],
+    "collection": {
+        "name": "Starbots NFT 1st Launch",
+        "family": "Starbots NFT"
+    },
+    "properties": {
+        "files": [{
+            "uri": "4.png",
+            "type": "image/png"
+        }],
+        "category": "image",
+        "creators": [{
+            "address": "EkusoHTA9WccY1We8rTX2xkiFXF5FB5FtbJzWBW3ZjXw",
+            "share": 100
+        }]
+    }
+}
