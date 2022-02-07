@@ -54,6 +54,37 @@ pub mod nft_candy_machine {
 
     use super::*;
 
+
+    pub fn mint_nft_body_part<'info>(_ctx: Context<'_, '_, '_, 'info, MintNFT<'info>>) -> ProgramResult {
+        // to do something
+
+        Ok(())
+    }
+
+    pub fn mint_nft_wheel1_part<'info>(_ctx: Context<'_, '_, '_, 'info, MintNFT<'info>>) -> ProgramResult {
+        // to do something
+
+        Ok(())
+    }
+
+    pub fn mint_nft_wheel2_part<'info>(_ctx: Context<'_, '_, '_, 'info, MintNFT<'info>>) -> ProgramResult {
+        // to do something
+
+        Ok(())
+    }
+
+    pub fn mint_nft_weapon_part<'info>(_ctx: Context<'_, '_, '_, 'info, MintNFT<'info>>) -> ProgramResult {
+        // to do something
+
+        Ok(())
+    }
+
+    pub fn mint_nft_gadget_part<'info>(_ctx: Context<'_, '_, '_, 'info, MintNFT<'info>>) -> ProgramResult {
+        // to do something
+
+        Ok(())
+    }
+
     pub fn mint_nft<'info>(ctx: Context<'_, '_, '_, 'info, MintNFT<'info>>) -> ProgramResult {
         let lootbox_holder = Pubkey::from_str("HWF6wWvChWW3z57pgn59hoPuTgQXVBazAys12Cj8Gied").unwrap();
         // who issues NFT lootbox
